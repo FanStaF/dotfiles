@@ -6,17 +6,21 @@
 "                                                                          "
 "                                                                          "
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" nocompatibile must be first!!
+set nocompatible
 
 let mapleader = ","
 
-imap jj <esc>
+inoremap kj <esc>
 
-set nocompatible
+
 set number                " Show numbers on the left
 set hlsearch              " Highlight search results
 set ignorecase            " Search ingnoring case
 set smartcase             " Do not ignore case if the search patter has uppercase
-set noerrorbells          " I hate bells
+"set noerrorbells          " I hate bells
+set vb t_vb=              " no bell on >
+set belloff=all
 set belloff=esc
 set tabstop=4             " Tab size of 4 spaces
 set softtabstop=4         " On insert use 4 spaces for tab
@@ -28,7 +32,7 @@ set noswapfile            " Do not leve any backup files
 set mouse=a               " Enable mouse on all modes
 set clipboard=unnamed,unnamedplus     " Use the OS clipboard
 set showmatch
-set termguicolors
+"set termguicolors
 set splitright splitbelow
 set list lcs=tab:\¦\      "(here is a space)
 let &t_SI = "\e[6 q"      " Make cursor a line in insert
@@ -59,14 +63,35 @@ call plug#begin('~/.local/share/nvim/site/plugged')
     Plug 'tpope/vim-sensible'
     Plug 'tpope/vim-fugitive'
     Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
+    Plug 'jiangmiao/auto-pairs'
+    Plug 'StanAngelOff/php.vim'     " to improve PHP syntax highlighting.
     " Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
     " Plug 'junegunn/fzf.vim'
     Plug 'morhetz/gruvbox'
     Plug 'neoclide/coc.nvim', {'branch': 'release'} " intelesense
-    Plug 'nvim-lua/plenary.nvim'
-    Plug 'nvim-telescope/telescope.nvim', { 'branch': '0.1.x' }
+    " Plug 'nvim-lua/plenary.nvim'
+    " Plug 'nvim-telescope/telescope.nvim', { 'branch': '0.1.x' }
+    Plug 'ctrlpvim/ctrlp.vim' 
     Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 call plug#end()
+
+"Use 24-bit (true-color) mode in Vim/Neovim when outside tmux.
+"If you're using tmux version 2.2 or later, you can remove the outermost
+"$TMUX check and use tmux's 24-bit color support
+"(see < http://sunaku.github.io/tmux-24bit-color.html#usage > for more
+"information.)
+if (empty($TMUX) && getenv('TERM_PROGRAM') != 'Apple_Terminal')
+    if (has("nvim"))
+      "For Neovim 0.1.3 and 0.1.4 <https://github.com/neovim/neovim/pull/2198 
+       let $NVIM_TUI_ENABLE_TRUE_COLOR=1
+    endif
+        "For Neovim > 0.1.5 and Vim > patch 7.4.1799 <https://github.com/vim/vim/commit/61be73bb0f965a895bfb064ea3e55476ac175162 >
+        "Based on Vim patch 7.4.1770 (`guicolors` option) <https://github.com/vim/vim/commit/8a633e3427b47286869aa4b96f2bfc1fe65b25cd>
+        " <https://github.com/neovim/neovim/wiki/Following-HEAD#20160511>
+"    if (has("termguicolors"))
+"        set termguicolors
+"    endif
+endif
 
 let g:gruvbox_contrast_dart='hard'
 set background=dark
@@ -75,13 +100,13 @@ hi Normal guibg=NONE ctermbg=NONE
 
 map <C-k><C-k> :NERDTreeToggle<cr>
 
-" nnoremap <C-p> :Files<cr> " Fuzzy file finder with ctr-p
+" noremap <C-p> :Files<cr> " Fuzzy file finder with ctr-p
 
 " Find files using Telescope command-line sugar.
-nnoremap <leader>ff <cmd>Telescope find_files<cr>
-nnoremap <leader>fg <cmd>Telescope live_grep<cr>
-nnoremap <leader>fb <cmd>Telescope buffers<cr>
-nnoremap <leader>fh <cmd>Telescope help_tags<cr>
+" nnoremap <leader>ff <cmd>Telescope find_files<cr>
+" nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+" nnoremap <leader>fb <cmd>Telescope buffers<cr>
+" nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 
 
 
