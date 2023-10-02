@@ -51,7 +51,7 @@ use({
           bg = vim.api.nvim_get_hl_by_name('StatusLine', true).background,
         })
 
-      -- vim.api.nvim_set_hl(0, 'IndentBlanklineChar', { fg = '#2F313C' })
+      vim.api.nvim_set_hl(0, 'IndentBlanklineChar', { fg = '#2F313C' })
     end,
   })
 
@@ -241,7 +241,7 @@ use({
       vim.keymap.set('t', '<F1>', '<C-\\><C-n>:FloatermToggle<CR>')
       vim.cmd([[
       highlight link Floaterm CursorLine
-      highlight link FloatermBorder CursorLineBg
+      " highlight link FloatermBorder CursorLineBg
     ]])
     end
   })
