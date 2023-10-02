@@ -206,34 +206,7 @@ use {
   'glepnir/dashboard-nvim',
   event = 'VimEnter',
   config = function()
-    require('dashboard').setup {
-      
-      center = {
-        {
-          icon = '  ',
-          desc = 'New file                       ',
-          action = 'enew',
-        },
-        {
-          icon = '  ',
-          shortcut = 'SPC f',
-          desc = 'Find file                 ',
-          action = 'Telescope find_files',
-        },
-        {
-          icon = '  ',
-          shortcut = 'SPC h',
-          desc = 'Recent files              ',
-          action = 'Telescope oldfiles',
-        },
-        {
-          icon = '  ',
-          shortcut = 'SPC g',
-          desc = 'Find Word                 ',
-          action = 'Telescope live_grep',
-        },
-      }
-    }
+    require('user/plugins/dashboard-nvim')
   end,
   requires = {'nvim-tree/nvim-web-devicons'}
 }
@@ -289,66 +262,66 @@ use({
   })
 
 -- Language Server Protocol.
---use({
---  'neovim/nvim-lspconfig',
---  requires = {
---    'williamboman/mason.nvim',
---    'williamboman/mason-lspconfig.nvim',
---    'b0o/schemastore.nvim',
---    'jose-elias-alvarez/null-ls.nvim',
---    'jayp0521/mason-null-ls.nvim',
---  },
---  config = function()
---    require('user/plugins/lspconfig')
---  end,
---})
---
----- Completion
---use({
---  'hrsh7th/nvim-cmp',
---  requires = {
---    'hrsh7th/cmp-nvim-lsp',
---    'hrsh7th/cmp-nvim-lsp-signature-help',
---    'hrsh7th/cmp-buffer',
---    'hrsh7th/cmp-path',
---    'L3MON4D3/LuaSnip',
---    'saadparwaiz1/cmp_luasnip',
---    'onsails/lspkind-nvim',
---  },
---
---  config = function()
---    require('user/plugins/cmp')
---  end,
---})
---
----- PHP Refactoring Tools
---use({
---  'phpactor/phpactor',
---  ft = 'php',
---  run = 'composer install --no-dev --optimize-autoloader',
---  config = function()
---    vim.keymap.set('n', '<Leader>pm', ':PhpactorContextMenu<CR>')
---    vim.keymap.set('n', '<Leader>pn', ':PhpactorClassNew<CR>')
---  end,u
---})
---
----- Project Configuration.
---use({
---  'tpope/vim-projectionist',
---  requires = 'tpope/vim-dispatch',
---  config = function()
---    require('user/plugins/projectionist')
---  end,
---})
---
----- Testing helper
---use({
---  'vim-test/vim-test',
---  config = function()
---    require('user/plugins/vim-test')
---  end,
---})
---
+use({
+  'neovim/nvim-lspconfig',
+  requires = {
+    'williamboman/mason.nvim',
+    'williamboman/mason-lspconfig.nvim',
+    'b0o/schemastore.nvim',
+    'jose-elias-alvarez/null-ls.nvim',
+    'jayp0521/mason-null-ls.nvim',
+  },
+  config = function()
+    require('user/plugins/lspconfig')
+  end,
+})
+
+-- Completion
+use({
+  'hrsh7th/nvim-cmp',
+  requires = {
+    'hrsh7th/cmp-nvim-lsp',
+    'hrsh7th/cmp-nvim-lsp-signature-help',
+    'hrsh7th/cmp-buffer',
+    'hrsh7th/cmp-path',
+    'L3MON4D3/LuaSnip',
+    'saadparwaiz1/cmp_luasnip',
+    'onsails/lspkind-nvim',
+  },
+
+  config = function()
+    require('user/plugins/cmp')
+  end,
+})
+
+-- PHP Refactoring Tools
+use({
+  'phpactor/phpactor',
+  ft = 'php',
+  run = 'composer install --no-dev --optimize-autoloader',
+  config = function()
+    vim.keymap.set('n', '<Leader>pm', ':PhpactorContextMenu<CR>')
+    vim.keymap.set('n', '<Leader>pn', ':PhpactorClassNew<CR>')
+  end,u
+})
+
+-- Project Configuration.
+use({
+  'tpope/vim-projectionist',
+  requires = 'tpope/vim-dispatch',
+  config = function()
+    require('user/plugins/projectionist')
+  end,
+})
+
+-- Testing helper
+use({
+  'vim-test/vim-test',
+  config = function()
+    require('user/plugins/vim-test')
+  end,
+})
+
 -- Automatically set up your configuration after cloning packer.nvim
 -- Put this at the end after all plugins
 if packer_bootstrap then
