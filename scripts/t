@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
 
 # Credit to ThePrimeagen
 
@@ -7,6 +7,7 @@ if [[ $# -eq 1  ]]; then
 else
     items=`find ~/code -maxdepth 2 -mindepth 1 -type d`
     items+=`echo -e "\n/tmp"`
+    items+=`echo -e "\n$HOME/dotfiles"`
     selected=`echo "$items" | fzf`
 fi
 
