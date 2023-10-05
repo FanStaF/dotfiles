@@ -1,5 +1,5 @@
 require('ibl').setup({
-  filetype_exclude = {
+  exclude = {
     'help',
     'terminal',
     'dashboard',
