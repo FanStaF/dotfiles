@@ -197,7 +197,7 @@ use({
 use({
     'lukas-reineke/indent-blankline.nvim',
     config = function()
-      require('user/plugins/indent-blankline')
+      require('ibl').setup()
     end,
   })
 

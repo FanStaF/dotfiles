@@ -6,7 +6,16 @@ local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protoc
 
 -- PHP
 -- npm install -g intelephense
-require('lspconfig').intelephense.setup({ capabilities = capabilities })
+require('lspconfig').intelephense.setup({
+    capabilities = capabilities,
+    settings = {
+      intelephense = {
+        files = {
+          maxSize = 5000000;
+        }
+      }
+  }
+})
 
 -- Vue, JavaScript, TypeScript
 -- npm install -g @vue/language-server

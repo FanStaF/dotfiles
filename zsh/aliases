@@ -1,0 +1,28 @@
+
+################################
+# alias
+################################
+
+
+alias hg='history | grep -i'
+
+alias changephp='sudo update-alternatives --config php'
+
+# php aliases
+alias ide-helper='php artisan ide-helper:generate && php artisan ide-helper:meta && php artisan ide-helper:models --nowrite'
+alias art='php artisan'
+alias serve='php artisan serve'
+alias migrate='php artisan migrate:fresh --seed'
+alias tinker='php artisan tinker'
+alias pt='phpunit --colors --bootstrap'
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    alias dir='dir --color=auto'
+    alias vdir='vdir --color=auto'
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi

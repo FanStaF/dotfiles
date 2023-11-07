@@ -1,0 +1,2 @@
+
+PATH=~/.local/bin/:~/.config/composer/vendor/bin:$PATH

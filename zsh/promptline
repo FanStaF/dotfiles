@@ -1,0 +1,8 @@
+# Run vcs_info just before a prompt is displayed (precmd)
+
+add-zsh-hook precmd vcs_info
+
+# add ${vcs_info_msg_0} to the prompt
+# e.g. here we add the Git information in red  
+
+PROMPT='%F{green}%2~ ${vcs_info_msg_0_}%f: '
