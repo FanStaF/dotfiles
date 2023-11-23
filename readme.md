@@ -1,4 +1,4 @@
-# Aslo install
+# Also install
 
 1. ripgrep
 2. fzf
@@ -7,3 +7,4 @@
     - npm install -g intelephense
     - npm install -g @tailwindcss/language-server
     - npm i -g vscode-langservers-extracted
+5. firacode Nerd Font Mono
