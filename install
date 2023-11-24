@@ -12,6 +12,9 @@ ln -s $DOTFILES/zsh/zshenv $HOME/.zshenv
 mkdir -p $HOME/.config
 mkdir -p $HOME/.local/bin
 
+rm -rf $HOME/.config/kitty
+ln -s $DOTFILES/kitty $HOME/.config/kitty
+
 rm -rf $HOME/.bashrc
 ln -s $DOTFILES/bashrc $HOME/.bashrc
 
