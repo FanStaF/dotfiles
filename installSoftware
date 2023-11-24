@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# Install Nala wrapper for apt
+sudo apt install nala -y
+
+# Install needed software
+sudo nala install fzf ripgrep kitty build-essential
+
