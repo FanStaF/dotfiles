@@ -55,6 +55,9 @@ use({
     end,
   })
 
+-- Gruvbox-material for a good ligth theme
+use('sainnhe/gruvbox-material')
+
 -- Commenting support.
 use('tpope/vim-commentary')
 
