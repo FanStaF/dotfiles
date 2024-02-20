@@ -36,7 +36,7 @@ return {
             })
             lspconfig.tsserver.setup({})
 
-            vim.keymap.set("n", "<leader>pm", ":PhpactorContextManu<CR>")
+            vim.keymap.set("n", "<leader>pm", ":PhpactorContextMenu<CR>")
             vim.keymap.set("n", "K", vim.lsp.buf.hover, {})
             vim.keymap.set("n", "<leader>gd", vim.lsp.buf.definition, {})
             vim.keymap.set("n", "<leader>gr", vim.lsp.buf.references, {})
