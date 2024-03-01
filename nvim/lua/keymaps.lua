@@ -2,6 +2,9 @@
 vim.g.mapleader = ','
 vim.g.maplocalleader = ','
 
+-- quick saving with leader+w
+vim.keymap.set("n", "<leader>w", ":w<CR>")
+
 -- kj instead of <esc>
 local options = { noremap = true }
 vim.keymap.set("i", "kj", "<Esc>", options)
@@ -32,7 +35,7 @@ vim.keymap.set('i', ',,', '<Esc>A,')
 vim.keymap.set('n', '<Leader>k', ':nohlsearch<CR>')
 
 -- Open the current file in the default program (on Mac this should just be just `open`).
-vim.keymap.set('n', '<Leader>x', ':!xdg-open %<CR><CR>')
+vim.keymap.set('n', '<Leader>o', ':!xdg-open %<CR><CR>')
 
 -- Move lines up and down.
 vim.keymap.set('i', '<A-j>', '<Esc>:move .+1<CR>==gi')
