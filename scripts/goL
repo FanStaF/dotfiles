@@ -1,0 +1,3 @@
+#!/usr/bin/zsh
+    export THEME=light
+    kitty +kitten themes --reload-in=all 1984 Light

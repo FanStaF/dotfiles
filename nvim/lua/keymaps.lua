@@ -34,6 +34,10 @@ vim.keymap.set('i', ',,', '<Esc>A,')
 -- Quickly clear search highlighting.
 vim.keymap.set('n', '<Leader>k', ':nohlsearch<CR>')
 
+-- Change between dark and light theme
+vim.keymap.set('n', '<leader>d', ':set background=dark<CR>')
+vim.keymap.set('n', '<leader>l', ':set background=light<CR>')
+
 -- Open the current file in the default program (on Mac this should just be just `open`).
 vim.keymap.set('n', '<Leader>o', ':!xdg-open %<CR><CR>')
 

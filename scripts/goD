@@ -1,0 +1,3 @@
+#!/usr/bin/zsh
+    export THEME=dark
+    kitty +kitten themes --reload-in=all 1984 Dark

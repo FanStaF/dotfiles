@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/zsh
 
 DOTFILES=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 
@@ -15,14 +15,18 @@ mkdir -p $HOME/.local/bin
 rm -rf $HOME/.config/kitty
 ln -s $DOTFILES/kitty $HOME/.config/kitty
 
-rm -rf $HOME/.bashrc
-ln -s $DOTFILES/bashrc $HOME/.bashrc
+# rm -rf $HOME/.bashrc
+# ln -s $DOTFILES/bashrc $HOME/.bashrc
 
 rm -rf $HOME/.tmux.conf
 ln -s $DOTFILES/tmux/tmux.conf $HOME/.tmux.conf
 
 rm -rf $HOME/.local/bin/t
 ln -s $DOTFILES/scripts/t $HOME/.local/bin/t
+rm -rf $HOME/.local/bin/goL
+ln -s $DOTFILES/scripts/goL $HOME/.local/bin/goL
+rm -rf $HOME/.local/bin/goD
+ln -s $DOTFILES/scripts/goD $HOME/.local/bin/goD
 
 rm -rf $HOME/.config/nvim
 ln -s $DOTFILES/nvim $HOME/.config/nvim
