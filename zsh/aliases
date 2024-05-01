@@ -8,6 +8,7 @@ alias hg='history | grep -i'
 
 alias changephp='sudo update-alternatives --config php'
 
+alias vim9='/snap/nvim/current/usr/bin/nvim'
 # php aliases
 alias ide-helper='php artisan ide-helper:generate && php artisan ide-helper:meta && php artisan ide-helper:models --nowrite'
 alias art='php artisan'
@@ -15,6 +16,9 @@ alias serve='php artisan serve'
 alias migrate='php artisan migrate:fresh --seed'
 alias tinker='php artisan tinker'
 alias pt='phpunit --colors --bootstrap'
+
+alias mailhog='docker run -p 8025:8025 -p 1025:1025 mailhog/mailhog'
+alias kali='docker run --rm -ti kali'
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then

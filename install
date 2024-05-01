@@ -27,6 +27,8 @@ rm -rf $HOME/.local/bin/goL
 ln -s $DOTFILES/scripts/goL $HOME/.local/bin/goL
 rm -rf $HOME/.local/bin/goD
 ln -s $DOTFILES/scripts/goD $HOME/.local/bin/goD
+rm -rf $HOME/.local/bin/kali
+ln -s $DOTFILES/scripts/kali $HOME/.local/bin/kali
 
 rm -rf $HOME/.config/nvim
 ln -s $DOTFILES/nvim $HOME/.config/nvim

@@ -16,6 +16,7 @@ return {
 					"html",
 					"cssls",
 					"tailwindcss",
+					"stimulus_ls",
 					"jsonls",
 					"marksman",
 					"sqlls",
@@ -49,6 +50,9 @@ return {
 					["language_server_psalm.enabled"] = false,
 				},
 			})
+            lspconfig.stimulus_ls.setup({
+                capabilities = capabilities
+            })
 			lspconfig.tsserver.setup({
 				root_dir = function(...)
 					return require("lspconfig.util").root_pattern(".git")(...)
@@ -79,8 +83,23 @@ return {
 					},
 				},
 			})
-			lspconfig.html.setup({})
-			lspconfig.tailwindcss.setup({})
+			lspconfig.html.setup({
+                capabilities = capabilities,
+                init_options = {
+                    configurationSection = { "html", "css", "javascript" },
+                    embeddedLanguages = {
+                        css = true,
+                        javascript = true,
+                    },
+                    provideFormatter = true,
+                },
+            })
+            lspconfig.cssls.setup({
+                capabilities = capabilities
+            })
+			lspconfig.tailwindcss.setup({
+                capabilities = capabilities
+            })
 
 			vim.keymap.set("n", "<leader>pm", ":PhpactorContextMenu<CR>")
 			vim.keymap.set("n", "K", vim.lsp.buf.hover, {})
