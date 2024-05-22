@@ -1,10 +1,11 @@
 return {
 	"nvim-telescope/telescope.nvim",
-	tag = "0.1.5",
+	branch = "0.1.x",
 	dependencies = {
 		"nvim-telescope/telescope-ui-select.nvim",
 		"nvim-lua/plenary.nvim",
 		"nvim-telescope/telescope-live-grep-args.nvim",
+        "nvim-tree/nvim-web-devicons",
 		{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
 	},
 	config = function()
@@ -12,7 +13,7 @@ return {
 
 		require("telescope").setup({
 			defaults = {
-				path_display = { truncate = 1 },
+				path_display = { "smart" },
 				prompt_prefix = "   ",
 				selection_caret = "  ",
 				layout_config = {
@@ -24,6 +25,8 @@ return {
 						["<esc>"] = actions.close,
 						["<C-Down>"] = actions.cycle_history_next,
 						["<C-Up>"] = actions.cycle_history_prev,
+						["<C-k>"] = actions.move_selection_previous,
+						["<C-j>"] = actions.move_selection_next,
 					},
 				},
 				file_ignore_patterns = { ".git/" },
@@ -52,14 +55,15 @@ return {
 			},
 		})
 		local builtin = require("telescope.builtin")
-		vim.keymap.set("n", "<leader>ff", builtin.find_files, {})
-		vim.keymap.set("n", "<leader>b", builtin.buffers, {})
+		vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Find files"})
+        vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Grep in files" })
+        vim.keymap.set("n", "<leader>fr", builtin.oldfiles, { desc = "Find recently opened" })
+		vim.keymap.set("n", "<leader>b", builtin.buffers, { desc = "Buffers switch"})
 		vim.keymap.set(
 			"n",
 			"<leader>fa",
-			[[<cmd>lua require('telescope.builtin').find_files({ no_ignore = true, prompt_title = 'All Files' })<CR>]]
+			[[<cmd>lua require('telescope.builtin').find_files({ no_ignore = true, prompt_title = 'All Files', desc = 'Find All Files' })<CR>]]
 		)
-		vim.keymap.set("n", "<leader>fg", builtin.live_grep, {})
 
 		require("telescope").load_extension("ui-select")
 		require("telescope").load_extension("fzf")
