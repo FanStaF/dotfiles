@@ -10,7 +10,7 @@ autoload -z edit-command-line
 zle -N edit-command-line
 bindkey -M vicmd v edit-comand-line
 # vi keybind
-bindkey -v
+# bindkey -v
 
 
 source $HOME/dotfiles/zsh/aliases
@@ -20,3 +20,6 @@ source $HOME/dotfiles/zsh/promptline
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# setup fzf key bindings and fuzzy completion.
+source $HOME/dotfiles/zsh/fzf-key-bindings.zsh
