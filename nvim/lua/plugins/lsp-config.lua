@@ -26,6 +26,8 @@ return {
 	},
 	{
 		"neovim/nvim-lspconfig",
+        event = { "BufReadPre", "BufNewFile" },
+        dependencies = { "antosha417/nvim-lsp-file-operations", config = true },
 		config = function()
 			local lspconfig = require("lspconfig")
 			lspconfig.lua_ls.setup({
@@ -103,10 +105,10 @@ return {
 
 			vim.keymap.set("n", "<leader>pm", ":PhpactorContextMenu<CR>")
 			vim.keymap.set("n", "K", vim.lsp.buf.hover, {})
-			vim.keymap.set("n", "<leader>gd", vim.lsp.buf.definition, {})
-			vim.keymap.set("n", "<leader>gr", vim.lsp.buf.references, {})
-			vim.keymap.set("n", "<leader>gi", vim.lsp.buf.implementation, {})
-			vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, {})
+			vim.keymap.set("n", "<leader>gd", vim.lsp.buf.definition, { desc = "Goto definition" })
+			vim.keymap.set("n", "<leader>gr", vim.lsp.buf.references, { desc = "Goto references" })
+			vim.keymap.set("n", "<leader>gi", vim.lsp.buf.implementation, { desc = "Goto Implementation"})
+			vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code Actions"})
 			vim.keymap.set("n", "]g", vim.diagnostic.goto_next)
 			vim.keymap.set("n", "[g", vim.diagnostic.goto_prev)
 		end,
