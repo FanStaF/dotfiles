@@ -10,7 +10,7 @@ alias changephp='sudo update-alternatives --config php'
 
 alias vim9='/snap/nvim/current/usr/bin/nvim'
 # php aliases
-alias ide-helper='php artisan ide-helper:generate && php artisan ide-helper:meta && php artisan ide-helper:models --nowrite'
+alias ide-helper='php artisan ide-helper:generate && php artisan ide-helper:meta && php artisan ide-helper:eloquent'
 alias art='php artisan'
 alias art7='php7.3 artisan'
 alias serve='php artisan serve'
@@ -18,6 +18,7 @@ alias serve7='php7.3 artisan serve'
 alias migrate='php artisan migrate:fresh --seed'
 alias tinker='php artisan tinker'
 alias pt='phpunit --colors --bootstrap'
+alias pint='php ./vendor/bin/pint --dirty'
 
 # Git aliases
 alias G='git'
