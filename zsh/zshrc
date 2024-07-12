@@ -23,3 +23,8 @@ export NVM_DIR="$HOME/.nvm"
 
 # setup fzf key bindings and fuzzy completion.
 source $HOME/dotfiles/zsh/fzf-key-bindings.zsh
+export VOLTA_HOME="$HOME/.volta"
+export PATH="$VOLTA_HOME/bin:$PATH"
+
+# setup completion for watson
+autoload -Uz compinit && compinit
