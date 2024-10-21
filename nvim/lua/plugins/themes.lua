@@ -20,6 +20,7 @@ return {
 			-- vim.cmd.colorscheme("catppuccin")
 			-- vim.cmd.colorscheme("zenbones")
 			vim.cmd.colorscheme("vscode")
+			vim.opt.background = "dark"
 		end,
 	},
 }

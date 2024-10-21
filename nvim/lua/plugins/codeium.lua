@@ -5,8 +5,12 @@ return {
         "hrsh7th/nvim-cmp",
     },
     config = function()
-        require("codeium").setup({})
+        require("codeium").setup({
+            workspace_root = {
+                use_lsp = true,
+            },
+        })
     end,
 
-   event = "BufEnter",
+    event = "BufEnter",
 }

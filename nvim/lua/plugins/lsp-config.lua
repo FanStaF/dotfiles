@@ -12,7 +12,7 @@ return {
                 ensure_installed = {
                     "lua_ls",
                     "phpactor",
-                    "tsserver",
+                    "ts_ls",
                     "html",
                     "cssls",
                     "tailwindcss",
@@ -52,10 +52,8 @@ return {
                     ["language_server_psalm.enabled"] = false,
                 },
             })
-            lspconfig.stimulus_ls.setup({
-                capabilities = capabilities,
-            })
-            lspconfig.tsserver.setup({
+            lspconfig.stimulus_ls.setup({})
+            lspconfig.ts_ls.setup({
                 root_dir = function(...)
                     return require("lspconfig.util").root_pattern(".git")(...)
                 end,

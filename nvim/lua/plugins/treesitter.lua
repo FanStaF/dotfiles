@@ -29,7 +29,7 @@ return {
         -- Set the *.blade.php file to be filetype of blade
         vim.api.nvim_create_autocmd({"BufRead", "BufNewFile"}, {
                 pattern = {"*.blade.php"},
-                command = "set ft=blade",
+                command = "set ft=blade.html",
 })
     end,
 }
