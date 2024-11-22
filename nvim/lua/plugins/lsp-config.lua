@@ -10,16 +10,16 @@ return {
         config = function()
             require("mason-lspconfig").setup({
                 ensure_installed = {
-                    "lua_ls",
-                    "phpactor",
-                    "ts_ls",
-                    "html",
                     "cssls",
-                    "tailwindcss",
-                    "stimulus_ls",
+                    "html",
                     "jsonls",
+                    "lua_ls",
                     "marksman",
+                    "phpactor",
                     "sqlls",
+                    "stimulus_ls",
+                    "tailwindcss",
+                    "ts_ls",
                 },
             })
         end,
@@ -48,8 +48,8 @@ return {
             lspconfig.phpactor.setup({
                 on_attach = on_attach,
                 init_options = {
-                    ["language_server_phpstan.enabled"] = false,
-                    ["language_server_psalm.enabled"] = false,
+                    ["language_server_phpstan.enabled"] = true,
+                    --     ["language_server_psalm.enabled"] = false,
                 },
             })
             lspconfig.stimulus_ls.setup({})
@@ -91,7 +91,6 @@ return {
                         css = true,
                         javascript = true,
                     },
-                    provideFormatter = true,
                 },
             })
             lspconfig.cssls.setup({

@@ -19,6 +19,7 @@ alias migrate='php artisan migrate --force'
 alias tinker='php artisan tinker'
 alias pt='phpunit --colors --bootstrap'
 alias pint='php ./vendor/bin/pint --dirty'
+alias llog='batcat storage/logs/laravel-$(date -u +%Y-%m-%d).log'
 
 # Git aliases
 alias G='git'

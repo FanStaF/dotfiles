@@ -39,7 +39,7 @@ vim.keymap.set('n', '<leader>sd', ':set background=dark<CR>')
 vim.keymap.set('n', '<leader>sl', ':set background=light<CR>')
 
 -- Open the current file in the default program (on Mac this should just be just `open`).
-vim.keymap.set('n', '<Leader>o', ':!xdg-open %<CR><CR>')
+-- vim.keymap.set('n', '<Leader>o', ':!xdg-open %<CR><CR>')
 
 -- Move lines up and down.
 vim.keymap.set('i', '<A-j>', '<Esc>:move .+1<CR>==gi')

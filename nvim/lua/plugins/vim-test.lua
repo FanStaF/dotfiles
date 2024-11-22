@@ -10,11 +10,12 @@ return {
         vim.cmd([[
             function! FloatermStrategy(cmd)
                 execute 'silent FloatermKill'
-                execute 'FloatermNew! '.a:cmd.' |less -X'
+                execute 'FloatermNew! '.a:cmd
             endfunction
 
             let g:test#custom_strategies = {'floaterm': function('FloatermStrategy')}
             let g:test#strategy = 'floaterm'
-        ]])
+            let g:test#php#phpunit#executable = 'php artisan test'
+            ]])
     end,
 }
