@@ -15,7 +15,7 @@ return {
                     "jsonls",
                     "lua_ls",
                     "marksman",
-                    "phpactor",
+                    "intelephense",
                     "sqlls",
                     "stimulus_ls",
                     "tailwindcss",
@@ -45,14 +45,10 @@ return {
                     },
                 },
             })
-            lspconfig.phpactor.setup({
-                on_attach = on_attach,
-                init_options = {
-                    ["language_server_phpstan.enabled"] = true,
-                    --     ["language_server_psalm.enabled"] = false,
-                },
+            lspconfig.stimulus_ls.setup({
+                cmd = { "stimulus-language-server", "--stdio" },
+                filetypes = { "html", "ruby", "eruby", "blade", "php" },
             })
-            lspconfig.stimulus_ls.setup({})
             lspconfig.ts_ls.setup({
                 root_dir = function(...)
                     return require("lspconfig.util").root_pattern(".git")(...)
@@ -96,6 +92,19 @@ return {
             lspconfig.cssls.setup({
                 capabilities = capabilities,
             })
+            local get_intelephense_license = function()
+                local f = assert(io.open(os.getenv("HOME") .. "/intelephense/license.txt", "rb"))
+                local content = f:read("*a")
+                f:close()
+                return string.gsub(content, "%s+", "")
+            end
+            lspconfig.intelephense.setup({
+                on_attach = on_attach,
+                init_options = { licenceKey = get_intelephense_license() },
+                cmd = { "intelephense", "--stdio" },
+                filetypes = { "php" },
+                root_dir = lspconfig.util.root_pattern("composer.json", ".git"),
+            })
             lspconfig.tailwindcss.setup({
                 cmd = { "tailwindcss-language-server", "--stdio" },
                 filetypes = {
@@ -112,12 +121,11 @@ return {
                 settings = {},
             })
 
-            vim.keymap.set("n", "<leader>pm", ":PhpactorContextMenu<CR>")
-            vim.keymap.set("n", "K", vim.lsp.buf.hover, {})
+            vim.keymap.set("n", "<leader>d", vim.lsp.buf.hover, { desc = "Hover (show definition)" })
             vim.keymap.set("n", "<leader>gd", vim.lsp.buf.definition, { desc = "Goto definition" })
             vim.keymap.set("n", "<leader>gr", vim.lsp.buf.references, { desc = "Goto references" })
             vim.keymap.set("n", "<leader>gi", vim.lsp.buf.implementation, { desc = "Goto Implementation" })
-            vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code Actions" })
+            vim.keymap.set("n", "<leader>a", vim.lsp.buf.code_action, { desc = "Code Actions" })
             vim.keymap.set("n", "]g", vim.diagnostic.goto_next)
             vim.keymap.set("n", "[g", vim.diagnostic.goto_prev)
         end,

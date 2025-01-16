@@ -28,7 +28,8 @@ alias GF='git fetch'
 alias GC='git commit'
 
 alias mailhog='docker run -p 8025:8025 -p 1025:1025 mailhog/mailhog'
-alias kali='docker run --net=host --rm -ti kali'
+alias kali='docker run --rm --net=host -it --shm-size=512m -p 6901:6901 -e VNC_PW=password kasmweb/kali-rolling-desktop:1.16.0'
+alias msf='docker run --rm --net=host -ti metasploitframework/metasploit-framework'
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
