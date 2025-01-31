@@ -29,7 +29,7 @@ return {
 						["<C-j>"] = actions.move_selection_next,
 					},
 				},
-				file_ignore_patterns = { ".git/", "phpstan-baseline.neon" },
+				file_ignore_patterns = { ".git/", "phpstan%-baseline.neon" },
 			},
 			pickers = {
 				find_files = {

@@ -100,7 +100,14 @@ return {
             end
             lspconfig.intelephense.setup({
                 on_attach = on_attach,
-                init_options = { licenceKey = get_intelephense_license() },
+                init_options = {
+                    licenceKey = get_intelephense_license(),
+                    environment = {
+                        includePaths = {
+                            vim.fn.expand("~/code/wowbrands/r20-digital/vendor/phpstan/phpstan/src"), -- Add PHPStan path dynamically
+                        },
+                    },
+                },
                 cmd = { "intelephense", "--stdio" },
                 filetypes = { "php" },
                 root_dir = lspconfig.util.root_pattern("composer.json", ".git"),
@@ -126,8 +133,10 @@ return {
             vim.keymap.set("n", "<leader>gr", vim.lsp.buf.references, { desc = "Goto references" })
             vim.keymap.set("n", "<leader>gi", vim.lsp.buf.implementation, { desc = "Goto Implementation" })
             vim.keymap.set("n", "<leader>a", vim.lsp.buf.code_action, { desc = "Code Actions" })
+            vim.keymap.set("n", "<leader>r", vim.lsp.buf.rename, { desc = "Rename" })
             vim.keymap.set("n", "]g", vim.diagnostic.goto_next)
             vim.keymap.set("n", "[g", vim.diagnostic.goto_prev)
+            vim.keymap.set("n", "<leader>gf", vim.lsp.buf.format, { desc = "Format Code" })
         end,
     },
 }
