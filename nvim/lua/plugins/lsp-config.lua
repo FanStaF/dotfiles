@@ -1,12 +1,12 @@
 return {
     {
-        "williamboman/mason.nvim",
+        "mason-org/mason.nvim",
         config = function()
             require("mason").setup()
         end,
     },
     {
-        "williamboman/mason-lspconfig.nvim",
+        "mason-org/mason-lspconfig.nvim",
         config = function()
             require("mason-lspconfig").setup({
                 ensure_installed = {
@@ -108,6 +108,13 @@ return {
                         },
                     },
                 },
+                settings = {
+                    intelephense = {
+                        diagnostics = {
+                            disable = { "P1036" },
+                        },
+                    },
+                },
                 cmd = { "intelephense", "--stdio" },
                 filetypes = { "php" },
                 root_dir = lspconfig.util.root_pattern("composer.json", ".git"),
@@ -134,8 +141,14 @@ return {
             vim.keymap.set("n", "<leader>gi", vim.lsp.buf.implementation, { desc = "Goto Implementation" })
             vim.keymap.set("n", "<leader>a", vim.lsp.buf.code_action, { desc = "Code Actions" })
             vim.keymap.set("n", "<leader>r", vim.lsp.buf.rename, { desc = "Rename" })
-            vim.keymap.set("n", "]g", vim.diagnostic.goto_next)
-            vim.keymap.set("n", "[g", vim.diagnostic.goto_prev)
+            vim.keymap.set("n", "]g", function()
+                vim.diagnostic.goto_next()
+                vim.cmd("normal! zz")
+            end)
+            vim.keymap.set("n", "[g", function()
+                vim.diagnostic.goto_prev()
+                vim.cmd("normal! zz")
+            end)
             vim.keymap.set("n", "<leader>gf", vim.lsp.buf.format, { desc = "Format Code" })
         end,
     },

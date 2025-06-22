@@ -20,12 +20,14 @@ alias tinker='php artisan tinker'
 alias pt='phpunit --colors --bootstrap'
 alias pint='php ./vendor/bin/pint --dirty'
 alias llog='batcat storage/logs/laravel-$(date -u +%Y-%m-%d).log'
+alias phpstan='~/code/wowbrands/r20-digital/vendor/bin/phpstan'
 
 # Git aliases
 alias G='git'
 alias GS='git status'
 alias GF='git fetch'
 alias GC='git commit'
+alias GL='git log --oneline'
 
 alias mailhog='docker run -p 8025:8025 -p 1025:1025 mailhog/mailhog'
 alias kali='docker run --rm --net=host -it --shm-size=512m -p 6901:6901 -e VNC_PW=password kasmweb/kali-rolling-desktop:1.16.0'

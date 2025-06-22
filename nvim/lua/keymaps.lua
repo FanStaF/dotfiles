@@ -48,3 +48,16 @@ vim.keymap.set('n', '<A-j>', ':move .+1<CR>==')
 vim.keymap.set('n', '<A-k>', ':move .-2<CR>==')
 vim.keymap.set('v', '<A-j>', ":move '>+1<CR>gv=gv")
 vim.keymap.set('v', '<A-k>', ":move '<-2<CR>gv=gv")
+
+-- custom functions --
+local myfuncs = require('functions')
+
+-- Run PHPStan -> QuickFix --
+vim.keymap.set('n', '<leader>pa', myfuncs.run_phpstan_async, { desc = 'Run PHPStan', noremap = true })
+-- Load git changed files -> QuickFix --
+vim.keymap.set('n', '<leader>GS', myfuncs.load_changed_files_to_qf, { desc = 'Git: first changes to QuickFix', noremap = true })
+
+-- Quickfix-only background test runs
+vim.keymap.set('n', '<leader>tqn', myfuncs.run_pest_nearest, { desc = 'Test (QF): nearest' })
+vim.keymap.set('n', '<leader>tqf', myfuncs.run_pest_file,    { desc = 'Test (QF): file' })
+vim.keymap.set('n', '<leader>tqs', myfuncs.run_pest_suite,   { desc = 'Test (QF): suite' })
