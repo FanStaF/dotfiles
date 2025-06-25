@@ -52,8 +52,6 @@ vim.keymap.set('v', '<A-k>', ":move '<-2<CR>gv=gv")
 -- custom functions --
 local myfuncs = require('functions')
 
--- Run PHPStan -> QuickFix --
-vim.keymap.set('n', '<leader>pa', myfuncs.run_phpstan_async, { desc = 'Run PHPStan', noremap = true })
 -- Load git changed files -> QuickFix --
 vim.keymap.set('n', '<leader>GS', myfuncs.load_changed_files_to_qf, { desc = 'Git: first changes to QuickFix', noremap = true })
 
