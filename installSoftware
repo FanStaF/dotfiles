@@ -67,6 +67,10 @@ sudo nala install -y \
 
 # PHP Version Selection
 echo -e "\n${MAGENTA}═══════════════════════════════════${NC}"
+if command -v php &> /dev/null; then
+    CURRENT_PHP=$(php --version | head -1)
+    echo -e "${YELLOW}Current PHP: ${CYAN}${CURRENT_PHP}${NC}\n"
+fi
 PHP_VERSION=$(select_option "Select PHP version:" "8.3 (Latest stable)" "8.2" "8.1" "8.4 (Beta)" "Skip PHP")
 
 if [[ "$PHP_VERSION" != "Skip PHP" ]]; then
@@ -107,18 +111,48 @@ if [[ "$PHP_VERSION" != "Skip PHP" ]]; then
         )
     fi
 
-    sudo nala install -y "${PHP_EXTENSIONS[@]}"
+    # Install extensions (disable exit on error temporarily)
+    set +e
+    sudo nala install -y "${PHP_EXTENSIONS[@]}" 2>&1 | tee /tmp/php-install.log
+    INSTALL_EXIT=$?
+    set -e
 
-    # Set as default PHP version
-    sudo update-alternatives --set php /usr/bin/php${PHP_VER}
+    if [ $INSTALL_EXIT -eq 0 ]; then
+        echo -e "${GREEN}✓ PHP extensions installed${NC}"
+    else
+        echo -e "${YELLOW}⚠ Some PHP extensions may have failed (this is often OK)${NC}"
+        echo -e "  ${CYAN}Log saved to: /tmp/php-install.log${NC}"
+    fi
 
-    echo -e "${GREEN}✓ PHP ${PHP_VER} installed${NC}"
+    # Set as default PHP version (won't exit on failure)
+    set +e
+    sudo update-alternatives --set php /usr/bin/php${PHP_VER} 2>/dev/null
+    if [ $? -ne 0 ]; then
+        # Try configuring alternatives if set failed
+        sudo update-alternatives --install /usr/bin/php php /usr/bin/php${PHP_VER} 100 2>/dev/null
+    fi
+    set -e
+    echo -e "${GREEN}✓ PHP ${PHP_VER} configured as default${NC}"
+
+    echo -e "${GREEN}✓ PHP installation complete${NC}"
     php --version | head -1
 fi
 
 # Composer
-if [[ "$PHP_VERSION" != "Skip PHP" ]] && ask_yes_no "\nInstall Composer?" "y"; then
-    if ! command -v composer &> /dev/null; then
+echo -e "\n${MAGENTA}═══════════════════════════════════${NC}"
+if [[ "$PHP_VERSION" != "Skip PHP" ]]; then
+    if command -v composer &> /dev/null; then
+        CURRENT_COMPOSER=$(composer --version 2>/dev/null | grep -oP 'Composer version \K[0-9.]+' || echo "unknown")
+        echo -e "${YELLOW}Composer installed: ${CYAN}${CURRENT_COMPOSER}${NC}"
+        LATEST_COMPOSER=$(curl -s https://api.github.com/repos/composer/composer/releases/latest | grep -oP '"tag_name": "\K[^"]+' || echo "unknown")
+        echo -e "${BLUE}Latest available: ${CYAN}${LATEST_COMPOSER}${NC}\n"
+
+        if ask_yes_no "Update Composer?" "n"; then
+            echo -e "${GREEN}Updating Composer...${NC}"
+            composer self-update
+            echo -e "${GREEN}✓ Composer updated${NC}"
+        fi
+    elif ask_yes_no "Install Composer?" "y"; then
         echo -e "${GREEN}Installing Composer...${NC}"
         EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')"
         php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
@@ -134,16 +168,42 @@ if [[ "$PHP_VERSION" != "Skip PHP" ]] && ask_yes_no "\nInstall Composer?" "y"; t
         sudo mv composer.phar /usr/local/bin/composer
         rm composer-setup.php
         echo -e "${GREEN}✓ Composer installed${NC}"
-    else
-        echo -e "${YELLOW}Composer already installed${NC}"
+        composer --version
     fi
 
-    # Global Composer packages
-    if ask_yes_no "Install global Composer tools? (Laravel installer, PHP-CS-Fixer, PHPStan)" "y"; then
-        composer global require laravel/installer --quiet
-        composer global require friendsofphp/php-cs-fixer --quiet
-        composer global require phpstan/phpstan --quiet
-        echo -e "${GREEN}✓ Global Composer tools installed${NC}"
+    # Global Composer packages (ask individually)
+    echo -e "\n${YELLOW}Global Composer tools:${NC}"
+
+    # Laravel Installer - Recommended
+    if ask_yes_no "Install Laravel Installer? (recommended for creating new projects)" "y"; then
+        echo -e "${BLUE}Installing Laravel Installer...${NC}"
+        set +e
+        composer global require laravel/installer --quiet 2>/dev/null && \
+            echo -e "  ${GREEN}✓ Laravel Installer installed${NC}" || \
+            echo -e "  ${YELLOW}⚠ Laravel Installer failed${NC}"
+        set -e
+    fi
+
+    # PHPStan - Usually not needed globally
+    echo -e "\n${CYAN}Note: PHPStan is typically used per-project (./vendor/bin/phpstan)${NC}"
+    if ask_yes_no "Install PHPStan globally anyway?" "n"; then
+        echo -e "${BLUE}Installing PHPStan...${NC}"
+        set +e
+        composer global require phpstan/phpstan --quiet 2>/dev/null && \
+            echo -e "  ${GREEN}✓ PHPStan installed${NC}" || \
+            echo -e "  ${YELLOW}⚠ PHPStan failed${NC}"
+        set -e
+    fi
+
+    # PHP-CS-Fixer - Laravel projects use Pint instead
+    echo -e "\n${CYAN}Note: Laravel projects use Pint (better than PHP-CS-Fixer)${NC}"
+    if ask_yes_no "Install PHP-CS-Fixer globally?" "n"; then
+        echo -e "${BLUE}Installing PHP-CS-Fixer...${NC}"
+        set +e
+        composer global require friendsofphp/php-cs-fixer --quiet 2>/dev/null && \
+            echo -e "  ${GREEN}✓ PHP-CS-Fixer installed${NC}" || \
+            echo -e "  ${YELLOW}⚠ PHP-CS-Fixer failed${NC}"
+        set -e
     fi
 fi
 
@@ -176,43 +236,80 @@ fi
 
 # Docker
 echo -e "\n${MAGENTA}═══════════════════════════════════${NC}"
-if ask_yes_no "Install Docker?" "y"; then
-    if ! command -v docker &> /dev/null; then
-        echo -e "${GREEN}Installing Docker...${NC}"
+if command -v docker &> /dev/null; then
+    CURRENT_DOCKER=$(docker --version 2>/dev/null | grep -oP 'Docker version \K[0-9.]+' || echo "unknown")
+    echo -e "${YELLOW}Docker installed: ${CYAN}${CURRENT_DOCKER}${NC}"
 
-        # Add Docker's official GPG key
-        sudo install -m 0755 -d /etc/apt/keyrings
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-        sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-        # Add repository
-        echo \
-          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-          $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-          sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-        sudo nala update
-        sudo nala install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-        # Add user to docker group
-        sudo usermod -aG docker $USER
-
-        echo -e "${GREEN}✓ Docker installed${NC}"
-        echo -e "${YELLOW}⚠  You'll need to logout/login for Docker group changes to take effect${NC}"
-    else
-        echo -e "${YELLOW}Docker already installed${NC}"
+    # Check docker-compose
+    if docker compose version &> /dev/null; then
+        COMPOSE_VER=$(docker compose version --short 2>/dev/null || echo "installed")
+        echo -e "${YELLOW}Docker Compose: ${CYAN}${COMPOSE_VER}${NC}"
     fi
+
+    # Latest available from repo (apt-cache will show available version)
+    LATEST_DOCKER=$(apt-cache policy docker-ce 2>/dev/null | grep Candidate | awk '{print $2}' | cut -d':' -f2 | cut -d'-' -f1 || echo "unknown")
+    echo -e "${BLUE}Latest available: ${CYAN}${LATEST_DOCKER}${NC}\n"
+
+    if ask_yes_no "Update Docker?" "n"; then
+        echo -e "${GREEN}Updating Docker...${NC}"
+        sudo nala install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        echo -e "${GREEN}✓ Docker updated${NC}"
+    fi
+elif ask_yes_no "Install Docker?" "y"; then
+    echo -e "${GREEN}Installing Docker...${NC}"
+
+    # Add Docker's official GPG key
+    sudo install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+    # Add repository
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+    sudo nala update
+    sudo nala install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+    # Add user to docker group
+    sudo usermod -aG docker $USER
+
+    echo -e "${GREEN}✓ Docker installed${NC}"
+    docker --version
+    echo -e "${YELLOW}⚠  You'll need to logout/login for Docker group changes to take effect${NC}"
 fi
 
 # Node.js with Volta
 echo -e "\n${MAGENTA}═══════════════════════════════════${NC}"
-if ask_yes_no "Install Node.js via Volta?" "y"; then
-    if ! command -v volta &> /dev/null; then
-        echo -e "${GREEN}Installing Volta...${NC}"
-        curl https://get.volta.sh | bash
-        export VOLTA_HOME="$HOME/.volta"
-        export PATH="$VOLTA_HOME/bin:$PATH"
+if command -v volta &> /dev/null; then
+    echo -e "${YELLOW}Volta installed${NC}"
+
+    if command -v node &> /dev/null; then
+        CURRENT_NODE=$(node --version 2>/dev/null)
+        echo -e "${YELLOW}Node.js installed: ${CYAN}${CURRENT_NODE}${NC}"
+
+        # Get LTS version info
+        LATEST_LTS=$(curl -s https://nodejs.org/dist/index.json | grep -oP '"version":"v\K[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
+        echo -e "${BLUE}Latest LTS: ${CYAN}v${LATEST_LTS}${NC}\n"
+
+        if ask_yes_no "Update Node.js to latest LTS?" "n"; then
+            echo -e "${GREEN}Updating Node.js...${NC}"
+            volta install node@lts
+            echo -e "${GREEN}✓ Node.js updated${NC}"
+            node --version
+        fi
+    elif ask_yes_no "Install Node.js LTS via Volta?" "y"; then
+        echo -e "${GREEN}Installing Node.js LTS...${NC}"
+        volta install node@lts
+        echo -e "${GREEN}✓ Node.js installed${NC}"
+        node --version
     fi
+elif ask_yes_no "Install Node.js via Volta?" "y"; then
+    echo -e "${GREEN}Installing Volta...${NC}"
+    curl https://get.volta.sh | bash
+    export VOLTA_HOME="$HOME/.volta"
+    export PATH="$VOLTA_HOME/bin:$PATH"
 
     if command -v volta &> /dev/null; then
         echo -e "${GREEN}Installing Node.js LTS...${NC}"
@@ -224,47 +321,92 @@ fi
 
 # Neovim
 echo -e "\n${MAGENTA}═══════════════════════════════════${NC}"
-if ask_yes_no "Install/Update Neovim (latest)?" "y"; then
-    echo -e "${GREEN}Installing Neovim...${NC}"
+if command -v nvim &> /dev/null; then
+    CURRENT_NVIM=$(nvim --version 2>/dev/null | head -1 | grep -oP 'NVIM v\K[0-9.]+' || echo "unknown")
+    echo -e "${YELLOW}Neovim installed: ${CYAN}v${CURRENT_NVIM}${NC}"
 
-    # Download and install
+    # Get latest version from GitHub
+    LATEST_NVIM=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest | grep -oP '"tag_name": "v\K[^"]+' || echo "unknown")
+    echo -e "${BLUE}Latest available: ${CYAN}v${LATEST_NVIM}${NC}\n"
+
+    if ask_yes_no "Update to latest version?" "n"; then
+        echo -e "${GREEN}Updating Neovim...${NC}"
+        curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz
+        sudo rm -rf /usr/local/nvim-linux64
+        sudo tar -C /usr/local -xzf nvim-linux64.tar.gz
+        sudo ln -sf /usr/local/nvim-linux64/bin/nvim /usr/local/bin/nvim
+        rm nvim-linux64.tar.gz
+        echo -e "${GREEN}✓ Neovim updated${NC}"
+        nvim --version | head -1
+    fi
+elif ask_yes_no "Install Neovim?" "y"; then
+    # Show latest version before installing
+    LATEST_NVIM=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest | grep -oP '"tag_name": "v\K[^"]+' || echo "latest")
+    echo -e "${BLUE}Installing: ${CYAN}v${LATEST_NVIM}${NC}\n"
+
+    echo -e "${GREEN}Installing Neovim...${NC}"
     curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz
     sudo rm -rf /usr/local/nvim-linux64
     sudo tar -C /usr/local -xzf nvim-linux64.tar.gz
     sudo ln -sf /usr/local/nvim-linux64/bin/nvim /usr/local/bin/nvim
     rm nvim-linux64.tar.gz
-
     echo -e "${GREEN}✓ Neovim installed${NC}"
     nvim --version | head -1
 fi
 
 # LazyGit
 echo -e "\n${MAGENTA}═══════════════════════════════════${NC}"
-if ask_yes_no "Install LazyGit?" "y"; then
-    if ! command -v lazygit &> /dev/null; then
-        LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-        curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+if command -v lazygit &> /dev/null; then
+    CURRENT_LAZYGIT=$(lazygit --version 2>/dev/null | grep -oP 'version=\K[0-9.]+' || echo "unknown")
+    echo -e "${YELLOW}LazyGit installed: ${CYAN}v${CURRENT_LAZYGIT}${NC}"
+
+    LATEST_LAZYGIT=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*' || echo "unknown")
+    echo -e "${BLUE}Latest available: ${CYAN}v${LATEST_LAZYGIT}${NC}\n"
+
+    if ask_yes_no "Update LazyGit?" "n"; then
+        echo -e "${GREEN}Updating LazyGit...${NC}"
+        curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LATEST_LAZYGIT}_Linux_x86_64.tar.gz"
         tar xf lazygit.tar.gz lazygit
         sudo install lazygit /usr/local/bin
         rm lazygit lazygit.tar.gz
-        echo -e "${GREEN}✓ LazyGit installed${NC}"
-    else
-        echo -e "${YELLOW}LazyGit already installed${NC}"
+        echo -e "${GREEN}✓ LazyGit updated${NC}"
     fi
+elif ask_yes_no "Install LazyGit?" "y"; then
+    LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+    echo -e "${BLUE}Installing: ${CYAN}v${LAZYGIT_VERSION}${NC}\n"
+
+    curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+    tar xf lazygit.tar.gz lazygit
+    sudo install lazygit /usr/local/bin
+    rm lazygit lazygit.tar.gz
+    echo -e "${GREEN}✓ LazyGit installed${NC}"
+    lazygit --version
 fi
 
 # Nerd Font
 echo -e "\n${MAGENTA}═══════════════════════════════════${NC}"
-if ask_yes_no "Install FiraCode Nerd Font?" "y"; then
+if fc-list | grep -qi "FiraCode.*Nerd"; then
+    echo -e "${YELLOW}FiraCode Nerd Font already installed${NC}"
+    if ask_yes_no "Reinstall FiraCode Nerd Font?" "n"; then
+        echo -e "${GREEN}Installing FiraCode Nerd Font...${NC}"
+        mkdir -p ~/.local/share/fonts
+        cd ~/.local/share/fonts
+        curl -fLo "FiraCodeNerdFont-Regular.ttf" \
+            https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/FiraCode/Regular/FiraCodeNerdFont-Regular.ttf
+        curl -fLo "FiraCodeNerdFont-Bold.ttf" \
+            https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/FiraCode/Bold/FiraCodeNerdFont-Bold.ttf
+        fc-cache -fv > /dev/null 2>&1
+        cd - > /dev/null
+        echo -e "${GREEN}✓ FiraCode Nerd Font installed${NC}"
+    fi
+elif ask_yes_no "Install FiraCode Nerd Font?" "y"; then
     echo -e "${GREEN}Installing FiraCode Nerd Font...${NC}"
     mkdir -p ~/.local/share/fonts
     cd ~/.local/share/fonts
-
     curl -fLo "FiraCodeNerdFont-Regular.ttf" \
         https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/FiraCode/Regular/FiraCodeNerdFont-Regular.ttf
     curl -fLo "FiraCodeNerdFont-Bold.ttf" \
         https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/FiraCode/Bold/FiraCodeNerdFont-Bold.ttf
-
     fc-cache -fv > /dev/null 2>&1
     cd - > /dev/null
     echo -e "${GREEN}✓ FiraCode Nerd Font installed${NC}"

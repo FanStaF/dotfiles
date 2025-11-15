@@ -114,8 +114,8 @@ fi
 
 echo -e "\n${BLUE}PHP Environment:${NC}"
 if check_command php "PHP"; then
-    # Check PHP extensions
-    REQUIRED_EXTS=("mysql" "curl" "mbstring" "xml" "zip")
+    # Check PHP extensions (using modern names)
+    REQUIRED_EXTS=("curl" "mbstring" "xml" "zip")
     MISSING_EXTS=()
 
     for ext in "${REQUIRED_EXTS[@]}"; do
@@ -127,6 +127,15 @@ if check_command php "PHP"; then
             ((ERRORS++))
         fi
     done
+
+    # Check MySQL extensions (mysqli or pdo_mysql)
+    if php -m 2>/dev/null | grep -qiE "^(mysqli|pdo_mysql)$"; then
+        echo -e "  ${GREEN}✓${NC} PHP extension: MySQL (mysqli/pdo_mysql)"
+    else
+        echo -e "  ${RED}✗${NC} PHP extension: MySQL ${RED}(missing mysqli/pdo_mysql)${NC}"
+        MISSING_EXTS+=("mysqli")
+        ((ERRORS++))
+    fi
 
     # Optional extensions
     OPTIONAL_EXTS=("redis" "xdebug" "imagick")
@@ -213,14 +222,51 @@ else
     check_command npm "NPM" "no"
 fi
 
-# Check if LSP servers are available
+# Check if LSP servers are available (Mason installs to ~/.local/share/nvim/mason)
 echo -e "\n${BLUE}LSP Servers (for Neovim):${NC}"
-check_command intelephense "Intelephense (PHP)" "no"
-check_command tailwindcss-language-server "Tailwind CSS" "no"
-check_command lua-language-server "Lua LS" "no"
 
-if [[ $WARNINGS -eq 0 ]] && command -v npm &> /dev/null; then
-    echo -e "  ${YELLOW}ℹ${NC}  Install LSPs: ${CYAN}nvim${NC} then run ${CYAN}:MasonInstall intelephense${NC}"
+MASON_BIN="$HOME/.local/share/nvim/mason/bin"
+MASON_PACKAGES="$HOME/.local/share/nvim/mason/packages"
+MISSING_LSPS=0
+
+# Function to check Mason-installed package
+check_mason_lsp() {
+    local bin_name="$1"
+    local package_name="$2"
+    local display_name="$3"
+
+    if [[ -f "$MASON_BIN/$bin_name" ]] || [[ -d "$MASON_PACKAGES/$package_name" ]]; then
+        echo -e "  ${GREEN}✓${NC} $display_name"
+        return 0
+    else
+        echo -e "  ${YELLOW}⊘${NC} $display_name ${YELLOW}(not installed via Mason)${NC}"
+        ((MISSING_LSPS++))
+        ((WARNINGS++))
+        return 1
+    fi
+}
+
+if [[ -d "$MASON_PACKAGES" ]]; then
+    check_mason_lsp "intelephense" "intelephense" "Intelephense (PHP)"
+    check_mason_lsp "tailwindcss-language-server" "tailwindcss-language-server" "Tailwind CSS"
+    check_mason_lsp "lua-language-server" "lua-language-server" "Lua LS"
+
+    # List other installed LSPs
+    if [[ -d "$MASON_PACKAGES" ]]; then
+        LSP_COUNT=$(ls -1 "$MASON_PACKAGES" 2>/dev/null | wc -l)
+        if [[ $LSP_COUNT -gt 3 ]]; then
+            echo -e "  ${CYAN}ℹ${NC}  Total Mason packages: ${CYAN}${LSP_COUNT}${NC}"
+        fi
+    fi
+
+    # Only show install message if LSPs are actually missing
+    if [[ $MISSING_LSPS -gt 0 ]]; then
+        echo -e "  ${YELLOW}ℹ${NC}  Install missing LSPs: ${CYAN}nvim${NC} then ${CYAN}:MasonInstall intelephense tailwindcss-language-server${NC}"
+    fi
+else
+    echo -e "  ${YELLOW}⊘${NC} Mason not initialized"
+    echo -e "    ${CYAN}→${NC} Open Neovim to initialize: ${CYAN}nvim${NC}"
+    ((WARNINGS++))
 fi
 
 echo -e "\n${BLUE}Git Configuration:${NC}"
@@ -244,11 +290,23 @@ check_file ~/.local/bin/goL "Theme switcher (goL/goD)"
 
 # Font check
 echo -e "\n${BLUE}Fonts:${NC}"
-if fc-list | grep -qi "FiraCode.*Nerd"; then
-    echo -e "  ${GREEN}✓${NC} FiraCode Nerd Font"
+if fc-list | grep -qi "Nerd"; then
+    # Detect which Nerd Font is installed
+    NERD_FONT=$(fc-list | grep -i "Nerd" | head -1 | grep -oP '[\w]+Nerd' | head -1 || echo "Nerd Font")
+    echo -e "  ${GREEN}✓${NC} Nerd Font installed"
+
+    # Show which font family
+    if fc-list | grep -qi "JetBrains.*Nerd"; then
+        echo -e "    ${CYAN}→${NC} JetBrainsMono Nerd Font"
+    elif fc-list | grep -qi "FiraCode.*Nerd"; then
+        echo -e "    ${CYAN}→${NC} FiraCode Nerd Font"
+    elif fc-list | grep -qi "Hack.*Nerd"; then
+        echo -e "    ${CYAN}→${NC} Hack Nerd Font"
+    fi
 else
-    echo -e "  ${YELLOW}⚠${NC} FiraCode Nerd Font not found"
+    echo -e "  ${YELLOW}⚠${NC} Nerd Font not found"
     echo -e "    ${CYAN}→${NC} Required for icons in Neovim/Tmux"
+    echo -e "    ${CYAN}→${NC} Run: ./installSoftware (select FiraCode Nerd Font)"
     ((WARNINGS++))
 fi
 
