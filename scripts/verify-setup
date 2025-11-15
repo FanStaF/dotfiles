@@ -1,0 +1,270 @@
+#!/usr/bin/env bash
+
+# Colors
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+echo -e "${CYAN}╔════════════════════════════════════════╗${NC}"
+echo -e "${CYAN}║    Development Setup Verification     ║${NC}"
+echo -e "${CYAN}╚════════════════════════════════════════╝${NC}\n"
+
+ERRORS=0
+WARNINGS=0
+
+# Function to check if command exists
+check_command() {
+    local cmd="$1"
+    local name="${2:-$1}"
+    local required="${3:-yes}"
+
+    if command -v "$cmd" &> /dev/null; then
+        local version=$(eval "$cmd --version 2>/dev/null | head -1" || echo "")
+        echo -e "  ${GREEN}✓${NC} $name"
+        if [[ -n "$version" ]]; then
+            echo -e "    ${CYAN}→${NC} $version"
+        fi
+        return 0
+    else
+        if [[ "$required" == "yes" ]]; then
+            echo -e "  ${RED}✗${NC} $name ${RED}(not found)${NC}"
+            ((ERRORS++))
+        else
+            echo -e "  ${YELLOW}⊘${NC} $name ${YELLOW}(optional, not installed)${NC}"
+            ((WARNINGS++))
+        fi
+        return 1
+    fi
+}
+
+# Function to check file exists
+check_file() {
+    local file="$1"
+    local name="$2"
+
+    if [[ -f "$file" ]] || [[ -L "$file" ]]; then
+        echo -e "  ${GREEN}✓${NC} $name"
+        return 0
+    else
+        echo -e "  ${RED}✗${NC} $name ${RED}(not found)${NC}"
+        ((ERRORS++))
+        return 1
+    fi
+}
+
+# Function to check directory exists
+check_dir() {
+    local dir="$1"
+    local name="$2"
+
+    if [[ -d "$dir" ]] || [[ -L "$dir" ]]; then
+        echo -e "  ${GREEN}✓${NC} $name"
+        return 0
+    else
+        echo -e "  ${RED}✗${NC} $name ${RED}(not found)${NC}"
+        ((ERRORS++))
+        return 1
+    fi
+}
+
+echo -e "${BLUE}Core Tools:${NC}"
+check_command zsh "Zsh"
+check_command tmux "Tmux"
+check_command nvim "Neovim"
+check_command fzf "FZF"
+check_command rg "Ripgrep"
+check_command git "Git"
+
+echo -e "\n${BLUE}Shell Configuration:${NC}"
+check_file ~/.zshrc "~/.zshrc"
+check_file ~/.zshenv "~/.zshenv"
+
+if [[ "$SHELL" == *"zsh"* ]]; then
+    echo -e "  ${GREEN}✓${NC} Default shell: Zsh"
+else
+    echo -e "  ${YELLOW}⚠${NC} Default shell: $SHELL ${YELLOW}(should be zsh)${NC}"
+    echo -e "    ${CYAN}→${NC} Run: chsh -s \$(which zsh)"
+    ((WARNINGS++))
+fi
+
+echo -e "\n${BLUE}Terminal:${NC}"
+check_command kitty "Kitty" "no"
+check_dir ~/.config/kitty "Kitty config"
+
+echo -e "\n${BLUE}Tmux:${NC}"
+check_file ~/.tmux.conf "~/.tmux.conf"
+check_command t "Tmux session manager (t)"
+
+echo -e "\n${BLUE}Neovim:${NC}"
+check_dir ~/.config/nvim "Neovim config"
+check_dir ~/.config/nvim/lua/plugins "Plugin configs"
+
+if command -v nvim &> /dev/null; then
+    if nvim --version | grep -q "NVIM v0.1[0-9]"; then
+        echo -e "  ${GREEN}✓${NC} Neovim version 0.10+"
+    else
+        echo -e "  ${YELLOW}⚠${NC} Neovim version $(nvim --version | head -1)"
+        echo -e "    ${CYAN}→${NC} Recommended: 0.10+ for native LSP"
+        ((WARNINGS++))
+    fi
+fi
+
+echo -e "\n${BLUE}PHP Environment:${NC}"
+if check_command php "PHP"; then
+    # Check PHP extensions
+    REQUIRED_EXTS=("mysql" "curl" "mbstring" "xml" "zip")
+    MISSING_EXTS=()
+
+    for ext in "${REQUIRED_EXTS[@]}"; do
+        if php -m 2>/dev/null | grep -qi "^${ext}$"; then
+            echo -e "  ${GREEN}✓${NC} PHP extension: $ext"
+        else
+            echo -e "  ${RED}✗${NC} PHP extension: $ext ${RED}(missing)${NC}"
+            MISSING_EXTS+=("$ext")
+            ((ERRORS++))
+        fi
+    done
+
+    # Optional extensions
+    OPTIONAL_EXTS=("redis" "xdebug" "imagick")
+    for ext in "${OPTIONAL_EXTS[@]}"; do
+        if php -m 2>/dev/null | grep -qi "^${ext}$"; then
+            echo -e "  ${GREEN}✓${NC} PHP extension: $ext (optional)"
+        fi
+    done
+fi
+
+check_command composer "Composer"
+
+if command -v composer &> /dev/null; then
+    GLOBAL_BIN="$HOME/.composer/vendor/bin:$HOME/.config/composer/vendor/bin"
+    if [[ ":$PATH:" == *":$HOME/.composer/vendor/bin:"* ]] || [[ ":$PATH:" == *":$HOME/.config/composer/vendor/bin:"* ]]; then
+        echo -e "  ${GREEN}✓${NC} Composer global bin in PATH"
+    else
+        echo -e "  ${YELLOW}⚠${NC} Composer global bin not in PATH"
+        ((WARNINGS++))
+    fi
+fi
+
+echo -e "\n${BLUE}Database:${NC}"
+if check_command mysql "MySQL Client"; then
+    # Check if MySQL server is running
+    if sudo systemctl is-active --quiet mysql 2>/dev/null; then
+        echo -e "  ${GREEN}✓${NC} MySQL service running"
+
+        # Test connection
+        if mysql -uroot -ppassword -e "SELECT 1" &> /dev/null; then
+            echo -e "  ${GREEN}✓${NC} MySQL connection (root/password)"
+
+            # Check databases
+            if mysql -uroot -ppassword -e "USE development" &> /dev/null; then
+                echo -e "  ${GREEN}✓${NC} Database: development"
+            else
+                echo -e "  ${YELLOW}⊘${NC} Database: development (not created)"
+                ((WARNINGS++))
+            fi
+
+            if mysql -uroot -ppassword -e "USE testing" &> /dev/null; then
+                echo -e "  ${GREEN}✓${NC} Database: testing"
+            else
+                echo -e "  ${YELLOW}⊘${NC} Database: testing (not created)"
+                ((WARNINGS++))
+            fi
+        else
+            echo -e "  ${YELLOW}⚠${NC} Cannot connect with root/password"
+            echo -e "    ${CYAN}→${NC} Run: ./scripts/bootstrap-mysql"
+            ((WARNINGS++))
+        fi
+    elif command -v docker &> /dev/null && docker ps 2>/dev/null | grep -q mysql; then
+        echo -e "  ${GREEN}✓${NC} MySQL running in Docker"
+    else
+        echo -e "  ${YELLOW}⊘${NC} MySQL service not running"
+        ((WARNINGS++))
+    fi
+fi
+
+echo -e "\n${BLUE}Containers:${NC}"
+check_command docker "Docker" "no"
+
+if command -v docker &> /dev/null; then
+    if docker ps &> /dev/null; then
+        echo -e "  ${GREEN}✓${NC} Docker daemon accessible"
+    else
+        echo -e "  ${YELLOW}⚠${NC} Docker daemon not accessible"
+        echo -e "    ${CYAN}→${NC} Check: groups (should include 'docker')"
+        echo -e "    ${CYAN}→${NC} Or run: sudo usermod -aG docker $USER && logout"
+        ((WARNINGS++))
+    fi
+
+    if command -v docker-compose &> /dev/null || docker compose version &> /dev/null 2>&1; then
+        echo -e "  ${GREEN}✓${NC} Docker Compose"
+    fi
+fi
+
+echo -e "\n${BLUE}Node.js Environment:${NC}"
+if check_command volta "Volta" "no"; then
+    check_command node "Node.js"
+    check_command npm "NPM"
+else
+    check_command node "Node.js" "no"
+    check_command npm "NPM" "no"
+fi
+
+# Check if LSP servers are available
+echo -e "\n${BLUE}LSP Servers (for Neovim):${NC}"
+check_command intelephense "Intelephense (PHP)" "no"
+check_command tailwindcss-language-server "Tailwind CSS" "no"
+check_command lua-language-server "Lua LS" "no"
+
+if [[ $WARNINGS -eq 0 ]] && command -v npm &> /dev/null; then
+    echo -e "  ${YELLOW}ℹ${NC}  Install LSPs: ${CYAN}nvim${NC} then run ${CYAN}:MasonInstall intelephense${NC}"
+fi
+
+echo -e "\n${BLUE}Git Configuration:${NC}"
+check_file ~/.gitconfig "~/.gitconfig"
+check_file ~/.gitignore_global "~/.gitignore_global"
+
+if git config --global user.name &> /dev/null && git config --global user.email &> /dev/null; then
+    echo -e "  ${GREEN}✓${NC} Git user configured"
+    echo -e "    ${CYAN}→${NC} $(git config --global user.name) <$(git config --global user.email)>"
+else
+    echo -e "  ${YELLOW}⚠${NC} Git user not configured"
+    echo -e "    ${CYAN}→${NC} Run: git config --global user.name \"Your Name\""
+    echo -e "    ${CYAN}→${NC} Run: git config --global user.email \"your@email.com\""
+    ((WARNINGS++))
+fi
+
+echo -e "\n${BLUE}Utilities:${NC}"
+check_command lazygit "LazyGit" "no"
+check_command batcat "Bat (better cat)" "no"
+check_file ~/.local/bin/goL "Theme switcher (goL/goD)"
+
+# Font check
+echo -e "\n${BLUE}Fonts:${NC}"
+if fc-list | grep -qi "FiraCode.*Nerd"; then
+    echo -e "  ${GREEN}✓${NC} FiraCode Nerd Font"
+else
+    echo -e "  ${YELLOW}⚠${NC} FiraCode Nerd Font not found"
+    echo -e "    ${CYAN}→${NC} Required for icons in Neovim/Tmux"
+    ((WARNINGS++))
+fi
+
+# Summary
+echo -e "\n${CYAN}════════════════════════════════════════${NC}"
+
+if [[ $ERRORS -eq 0 ]] && [[ $WARNINGS -eq 0 ]]; then
+    echo -e "${GREEN}✅ Perfect! Everything is set up correctly.${NC}"
+elif [[ $ERRORS -eq 0 ]]; then
+    echo -e "${YELLOW}✓ Setup complete with $WARNINGS warning(s).${NC}"
+    echo -e "${YELLOW}  Optional components or minor issues detected.${NC}"
+else
+    echo -e "${RED}✗ Setup incomplete: $ERRORS error(s), $WARNINGS warning(s).${NC}"
+    echo -e "${YELLOW}  Run the suggested commands above to fix issues.${NC}"
+fi
+
+echo -e "${CYAN}════════════════════════════════════════${NC}\n"
+
+exit $ERRORS
