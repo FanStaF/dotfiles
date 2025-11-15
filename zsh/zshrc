@@ -1,16 +1,10 @@
 # prompt
 # PROMPT='%F{green}%n@X%~: %f'
 
-# set editor for zsh
-export EDITOR=nvim
-export VISUAL=nvim
-# set NVIM as server listening at /tmp/nvim
-export NVIM_LISTEN_ADDRESS=/tmp/nvim
-
-# Editor
+# Editor keybindings
 autoload -z edit-command-line
 zle -N edit-command-line
-bindkey -M vicmd v edit-comand-line
+bindkey -M vicmd v edit-command-line
 # vi keybind
 # bindkey -v
 
@@ -19,16 +13,14 @@ source $HOME/dotfiles/zsh/aliases
 source $HOME/dotfiles/zsh/add-git-status
 source $HOME/dotfiles/zsh/promptline
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
 # setup fzf key bindings and fuzzy completion.
 source $HOME/dotfiles/zsh/fzf-key-bindings.zsh
-export VOLTA_HOME="$HOME/.volta"
-export PATH="$VOLTA_HOME/bin:$PATH"
 
-# setup completion for watson
-autoload -Uz compinit && compinit
-
-export KITTY_LISTEN_ON="unix:/tmp/kitty"
+# setup completion for watson (with caching for faster startup)
+autoload -Uz compinit
+# Only regenerate compdump once per day
+if [[ -n ${ZDOTDIR:-$HOME}/.zcompdump(#qN.mh+24) ]]; then
+    compinit
+else
+    compinit -C
+fi

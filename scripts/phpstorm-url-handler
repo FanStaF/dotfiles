@@ -1,4 +1,4 @@
-#!/usr/bin/zsh
+#!/usr/bin/env zsh
 # open PhpStorm URLs inside running Neovim (in tmux session if available)
 
 url="$1"

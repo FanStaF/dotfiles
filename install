@@ -1,41 +1,44 @@
-#!/usr/bin/zsh
+#!/usr/bin/env zsh
 
-DOTFILES=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+# Exit on error
+set -e
 
-rm -rf $HOME/.zshrc
-ln -s $DOTFILES/zsh/zshrc $HOME/.zshrc
-rm -rf $HOME/.zshenv
-ln -s $DOTFILES/zsh/zshenv $HOME/.zshenv
+# Get dotfiles directory (zsh-compatible)
+DOTFILES=$(cd $(dirname "${(%):-%N}") && pwd)
 
+echo "📦 Installing dotfiles from: $DOTFILES"
 
-# just in case
+# Zsh configuration
+ln -sf $DOTFILES/zsh/zshrc $HOME/.zshrc
+ln -sf $DOTFILES/zsh/zshenv $HOME/.zshenv
+
+# Git configuration
+ln -sf $DOTFILES/git/gitconfig $HOME/.gitconfig
+ln -sf $DOTFILES/git/gitignore_global $HOME/.gitignore_global
+
+# Create directories
 mkdir -p $HOME/.config
 mkdir -p $HOME/.local/bin
 
-rm -rf $HOME/.config/kitty
-ln -s $DOTFILES/kitty $HOME/.config/kitty
+# Terminal emulator
+ln -sf $DOTFILES/kitty $HOME/.config/kitty
 
-# rm -rf $HOME/.bashrc
-# ln -s $DOTFILES/bashrc $HOME/.bashrc
+# Tmux
+ln -sf $DOTFILES/tmux/tmux.conf $HOME/.tmux.conf
 
-rm -rf $HOME/.tmux.conf
-ln -s $DOTFILES/tmux/tmux.conf $HOME/.tmux.conf
+# Scripts
+ln -sf $DOTFILES/scripts/t $HOME/.local/bin/t
+ln -sf $DOTFILES/scripts/goL $HOME/.local/bin/goL
+ln -sf $DOTFILES/scripts/goD $HOME/.local/bin/goD
+# Kali: Create scripts/kali - see zsh/aliases lines 30-32 for examples
+ln -sf $DOTFILES/scripts/kali $HOME/.local/bin/kali
 
-# t helper to load tmux sessions
-rm -rf $HOME/.local/bin/t
-ln -s $DOTFILES/scripts/t $HOME/.local/bin/t
-# set light or dark theme
-rm -rf $HOME/.local/bin/goL
-ln -s $DOTFILES/scripts/goL $HOME/.local/bin/goL
-rm -rf $HOME/.local/bin/goD
-ln -s $DOTFILES/scripts/goD $HOME/.local/bin/goD
-# open Kali
-rm -rf $HOME/.local/bin/kali
-ln -s $DOTFILES/scripts/kali $HOME/.local/bin/kali
-# open PHPStorm links with neovim
-rm -rf $HOME/.local/bin/phpstorm-url-handler
-ln -s $DOTFILES/scripts/phpstorm-url-handler $HOME/.local/bin/phpstorm-url-handler
+# PHPStorm integration
+ln -sf $DOTFILES/scripts/phpstorm-url-handler $HOME/.local/bin/phpstorm-url-handler
 $DOTFILES/scripts/setup-phpstorm-nvim-handler || echo "⚠️  phpstorm-nvim handler setup failed"
 
-rm -rf $HOME/.config/nvim
-ln -s $DOTFILES/nvim $HOME/.config/nvim
+# Neovim
+ln -sf $DOTFILES/nvim $HOME/.config/nvim
+
+echo "✅ Dotfiles installed successfully!"
+echo "🔄 Restart your shell or run: source ~/.zshrc"

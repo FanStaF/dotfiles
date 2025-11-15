@@ -1,0 +1,74 @@
+[user]
+	name = Staffan Lindstrom
+	email = fanstaf@hotmail.com
+
+[init]
+	defaultBranch = main
+
+[core]
+	editor = nvim
+	excludesfile = ~/.gitignore_global
+	autocrlf = input
+
+[pull]
+	rebase = false
+
+[push]
+	default = simple
+	autoSetupRemote = true
+
+[color]
+	ui = auto
+
+[alias]
+	# Short status
+	s = status -s
+
+	# Pretty log
+	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+
+	# Show last commit
+	last = log -1 HEAD --stat
+
+	# Amend last commit
+	amend = commit --amend --no-edit
+
+	# Undo last commit (keep changes)
+	undo = reset HEAD~1 --mixed
+
+	# List branches sorted by last modified
+	branches = branch -a --sort=-committerdate
+
+	# Quick commit
+	c = commit -m
+
+	# Add all and commit
+	ac = !git add -A && git commit -m
+
+	# Show diff of staged changes
+	staged = diff --cached
+
+	# Interactive rebase
+	ri = rebase -i
+
+	# Switch to branch
+	co = checkout
+
+	# Create and switch to new branch
+	cob = checkout -b
+
+	# Pull with rebase
+	pr = pull --rebase
+
+	# Show contributors
+	contributors = shortlog -sn
+
+[diff]
+	tool = nvimdiff
+
+[merge]
+	tool = nvimdiff
+	conflictstyle = diff3
+
+[rerere]
+	enabled = true

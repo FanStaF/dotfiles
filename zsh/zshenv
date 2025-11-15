@@ -1,2 +1,17 @@
+# Environment variables (loaded by all zsh processes)
 
-PATH=~/.local/bin/:~/.config/composer/vendor/bin:$PATH
+# Editors
+export EDITOR=nvim
+export VISUAL=nvim
+
+# Neovim server
+export NVIM_LISTEN_ADDRESS=/tmp/nvim
+
+# Node version manager
+export VOLTA_HOME="$HOME/.volta"
+
+# Kitty terminal
+export KITTY_LISTEN_ON="unix:/tmp/kitty"
+
+# PATH
+PATH=~/.local/bin/:~/.config/composer/vendor/bin:$VOLTA_HOME/bin:$PATH

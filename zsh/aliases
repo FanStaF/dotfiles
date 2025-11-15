@@ -18,7 +18,17 @@ alias tinker='php artisan tinker'
 alias pt='phpunit --colors --bootstrap'
 alias pint='php ./vendor/bin/pint --dirty'
 alias llog='batcat storage/logs/laravel-$(date -u +%Y-%m-%d).log'
-alias stan='~/code/wowbrands/r20-digital/vendor/bin/phpstan'
+
+# PHPStan - runs from current project's vendor/bin
+stan() {
+    if [ -f "./vendor/bin/phpstan" ]; then
+        ./vendor/bin/phpstan "$@"
+    else
+        echo "❌ PHPStan not found in ./vendor/bin/phpstan"
+        echo "Run: composer require --dev phpstan/phpstan"
+        return 1
+    fi
+}
 
 # Git aliases
 alias G='git'
