@@ -1,5 +1,6 @@
 return {
     "akinsho/bufferline.nvim",
+    event = "VeryLazy",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
         require('bufferline').setup({
@@ -12,7 +13,7 @@ return {
                 max_name_length = 25,
                 offsets = {
                     {
-                        filetype = 'NvimTree',
+                        filetype = 'neo-tree',
                         text = '  Files',
                         highlight = 'StatusLine',
                         text_align = 'left',

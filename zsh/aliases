@@ -8,19 +8,17 @@ alias hg='history | grep -i'
 
 alias changephp='sudo update-alternatives --config php'
 
-alias vim='/snap/nvim/current/usr/bin/nvim'
+alias vim='/usr/local/bin/nvim'
 # php aliases
 alias ide-helper='php artisan ide-helper:generate && php artisan ide-helper:meta && php artisan ide-helper:eloquent'
 alias art='php artisan'
-alias art7='php7.3 artisan'
 alias serve='php artisan serve'
-alias serve7='php7.3 artisan serve'
 alias migrate='php artisan migrate --force'
 alias tinker='php artisan tinker'
 alias pt='phpunit --colors --bootstrap'
 alias pint='php ./vendor/bin/pint --dirty'
 alias llog='batcat storage/logs/laravel-$(date -u +%Y-%m-%d).log'
-alias phpstan='~/code/wowbrands/r20-digital/vendor/bin/phpstan'
+alias stan='~/code/wowbrands/r20-digital/vendor/bin/phpstan'
 
 # Git aliases
 alias G='git'

@@ -20,13 +20,14 @@ function M.run_phpstan_async()
                 if #output > 0 then
                     local items = {}
                     for _, line in ipairs(output) do
-                        local file, lnum = line:match("at%s+([%w%./\\_-]+%.php):(%d+)")
-                        if filename and lnum and msg then
+                        -- PHPStan raw format: "path/to/file.php:line: Error message"
+                        local file, lnum, msg = line:match("^([%w%./\\_-]+%.php):(%d+):(.+)$")
+                        if file and lnum and msg then
                             table.insert(items, {
-                                filename = filename,
+                                filename = file,
                                 lnum = tonumber(lnum),
                                 col = 1,
-                                text = msg,
+                                text = vim.trim(msg),
                             })
                         end
                     end
