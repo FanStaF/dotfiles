@@ -1,0 +1,23 @@
+#!/usr/bin/zsh
+# open PhpStorm URLs inside running Neovim (in tmux session if available)
+
+url="$1"
+
+# Extract file and line
+file=$(echo "$url" | sed -E 's/.*file=([^&]+).*/\1/' | sed 's/%2F/\//g')
+line=$(echo "$url" | sed -E 's/.*line=([0-9]+).*/\1/')
+
+# Default socket
+SOCKET="${NVIM_LISTEN_ADDRESS:-/tmp/nvim}"
+
+# If the socket exists, send to the running Neovim instance
+if [ -S "$SOCKET" ]; then
+  nvim --server "$SOCKET" --remote-send "<Cmd>edit +$line $file<CR>"
+  # Optional: focus the tmux window running Neovim
+  if [ -n "$TMUX" ]; then
+    tmux select-window -t "$(tmux list-windows -F '#{window_index}:#{window_name}' | grep -i nvim | cut -d: -f1 | head -n1)" 2>/dev/null || true
+  fi
+else
+  # No socket found — open a new Neovim session as fallback
+  nvim +"$line" "$file"
+fi

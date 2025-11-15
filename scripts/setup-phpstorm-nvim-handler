@@ -1,0 +1,62 @@
+#!/usr/bin/zsh
+set -e
+
+# === Configuration ===
+HANDLER_NAME="phpstorm-url-handler"
+BIN_PATH="$HOME/.local/bin/$HANDLER_NAME"
+DESKTOP_FILE="$HOME/.local/share/applications/$HANDLER_NAME.desktop"
+EXEC_PATH="$BIN_PATH"
+
+# === Sanity checks ===
+if [ ! -x "$BIN_PATH" ]; then
+  echo "❌ Error: Handler script not found or not executable at: $BIN_PATH"
+  echo "Make sure you created ~/.local/bin/phpstorm-url-handler and chmod +x it."
+  exit 1
+fi
+
+# === Create .desktop entry ===
+echo "🛠️  Creating desktop entry at $DESKTOP_FILE ..."
+mkdir -p "$(dirname "$DESKTOP_FILE")"
+
+cat > "$DESKTOP_FILE" <<EOF
+[Desktop Entry]
+Name=PhpStorm to Neovim
+Exec=$EXEC_PATH %u
+Type=Application
+NoDisplay=true
+MimeType=x-scheme-handler/phpstorm;
+EOF
+
+# === Register handler ===
+echo "🔗 Registering phpstorm:// URI handler ..."
+xdg-mime default "$(basename "$DESKTOP_FILE")" x-scheme-handler/phpstorm
+update-desktop-database "$HOME/.local/share/applications/" >/dev/null 2>&1 || true
+
+# === Verify ===
+echo "✅ Verifying registration..."
+current_handler=$(xdg-mime query default x-scheme-handler/phpstorm || true)
+
+if [[ "$current_handler" == "$(basename "$DESKTOP_FILE")" ]]; then
+  echo "🎉 Successfully registered PhpStorm URL handler -> Neovim!"
+else
+  echo "⚠️  Registration might not have succeeded. Current handler: $current_handler"
+fi
+
+PREFS="$HOME/.config/google-chrome/Default/Preferences"
+
+# ensure Chrome profile exists
+mkdir -p "$(dirname "$PREFS")"
+[ ! -f "$PREFS" ] && echo "{}" > "$PREFS"
+
+# add phpstorm acceptance if missing
+if ! grep -q '"phpstorm"' "$PREFS"; then
+  jq '.protocol_handler.accepted_schemes.phpstorm = true' "$PREFS" > "$PREFS.tmp" && mv "$PREFS.tmp" "$PREFS"
+fi
+
+# === Test hint ===
+echo ""
+echo "👉 Test it by running:"
+echo "   xdg-open 'phpstorm://open?file=%2Fetc%2Fhosts&line=1'"
+echo ""
+echo "It should open Neovim at /etc/hosts:1"
+

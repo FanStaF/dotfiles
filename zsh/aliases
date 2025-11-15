@@ -8,7 +8,7 @@ alias hg='history | grep -i'
 
 alias changephp='sudo update-alternatives --config php'
 
-alias vim9='/snap/nvim/current/usr/bin/nvim'
+alias vim='/snap/nvim/current/usr/bin/nvim'
 # php aliases
 alias ide-helper='php artisan ide-helper:generate && php artisan ide-helper:meta && php artisan ide-helper:eloquent'
 alias art='php artisan'

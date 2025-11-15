@@ -21,14 +21,21 @@ ln -s $DOTFILES/kitty $HOME/.config/kitty
 rm -rf $HOME/.tmux.conf
 ln -s $DOTFILES/tmux/tmux.conf $HOME/.tmux.conf
 
+# t helper to load tmux sessions
 rm -rf $HOME/.local/bin/t
 ln -s $DOTFILES/scripts/t $HOME/.local/bin/t
+# set light or dark theme
 rm -rf $HOME/.local/bin/goL
 ln -s $DOTFILES/scripts/goL $HOME/.local/bin/goL
 rm -rf $HOME/.local/bin/goD
 ln -s $DOTFILES/scripts/goD $HOME/.local/bin/goD
+# open Kali
 rm -rf $HOME/.local/bin/kali
 ln -s $DOTFILES/scripts/kali $HOME/.local/bin/kali
+# open PHPStorm links with neovim
+rm -rf $HOME/.local/bin/phpstorm-url-handler
+ln -s $DOTFILES/scripts/phpstorm-url-handler $HOME/.local/bin/phpstorm-url-handler
+$DOTFILES/scripts/setup-phpstorm-nvim-handler || echo "⚠️  phpstorm-nvim handler setup failed"
 
 rm -rf $HOME/.config/nvim
 ln -s $DOTFILES/nvim $HOME/.config/nvim

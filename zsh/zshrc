@@ -4,6 +4,8 @@
 # set editor for zsh
 export EDITOR=nvim
 export VISUAL=nvim
+# set NVIM as server listening at /tmp/nvim
+export NVIM_LISTEN_ADDRESS=/tmp/nvim
 
 # Editor
 autoload -z edit-command-line
@@ -28,3 +30,5 @@ export PATH="$VOLTA_HOME/bin:$PATH"
 
 # setup completion for watson
 autoload -Uz compinit && compinit
+
+export KITTY_LISTEN_ON="unix:/tmp/kitty"
