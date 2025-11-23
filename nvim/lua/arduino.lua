@@ -1,17 +1,29 @@
 -- Generic Arduino project configuration
 -- Automatically detects Arduino projects and loads keybindings
 
--- Helper to check if current directory is an Arduino project
+-- Helper to check if current buffer's directory is an Arduino project
 local function is_arduino_project()
-    -- Look for .ino files in current directory
-    local ino_files = vim.fn.glob("*.ino", false, true)
+    -- Get directory of current buffer, or current directory if no buffer
+    local dir = vim.fn.expand("%:p:h")
+    if dir == "" then
+        dir = vim.fn.getcwd()
+    end
+    -- Look for .ino files in that directory
+    local ino_files = vim.fn.glob(dir .. "/*.ino", false, true)
     return #ino_files > 0
 end
 
 -- Helper to get FQBN from project directory or prompt user
 local function get_fqbn()
-    -- Check if .arduino-fqbn file exists in project root
-    local fqbn_file = io.open(".arduino-fqbn", "r")
+    -- Get directory of current buffer, or current directory if no buffer
+    local dir = vim.fn.expand("%:p:h")
+    if dir == "" then
+        dir = vim.fn.getcwd()
+    end
+    local fqbn_path = dir .. "/.arduino-fqbn"
+
+    -- Check if .arduino-fqbn file exists in buffer's directory
+    local fqbn_file = io.open(fqbn_path, "r")
     if fqbn_file then
         local fqbn = fqbn_file:read("*l")
         fqbn_file:close()
@@ -31,9 +43,12 @@ local function setup_arduino_bindings()
 
     local fqbn = get_fqbn()
 
+    -- Get the directory containing the Arduino project files
+    local project_dir = vim.fn.expand("%:p:h")
+
     -- Compile only
     vim.keymap.set("n", "<leader>Ac", function()
-        vim.cmd("split | terminal arduino-cli compile --fqbn " .. fqbn .. " .")
+        vim.cmd("split | terminal cd " .. vim.fn.shellescape(project_dir) .. " && arduino-cli compile --fqbn " .. fqbn .. " .")
     end, { desc = "Arduino: Compile", buffer = true })
 
     -- Upload via OTA
@@ -41,7 +56,7 @@ local function setup_arduino_bindings()
         local ip = vim.fn.input("OTA IP address: ", "192.168.1.67")
         if ip ~= "" then
             vim.cmd(
-                "split | terminal arduino-cli compile --fqbn " .. fqbn .. " . && arduino-cli upload --fqbn " .. fqbn .. " --port " .. ip .. " ."
+                "split | terminal cd " .. vim.fn.shellescape(project_dir) .. " && arduino-cli compile --fqbn " .. fqbn .. " . && arduino-cli upload --fqbn " .. fqbn .. " --port " .. ip .. " ."
             )
         end
     end, { desc = "Arduino: Upload (OTA)", buffer = true })
@@ -51,14 +66,14 @@ local function setup_arduino_bindings()
         local port = vim.fn.input("USB Port: ", "/dev/ttyUSB0")
         if port ~= "" then
             vim.cmd(
-                "split | terminal arduino-cli compile --fqbn " .. fqbn .. " . && arduino-cli upload --fqbn " .. fqbn .. " --port " .. port .. " ."
+                "split | terminal cd " .. vim.fn.shellescape(project_dir) .. " && arduino-cli compile --fqbn " .. fqbn .. " . && arduino-cli upload --fqbn " .. fqbn .. " --port " .. port .. " ."
             )
         end
     end, { desc = "Arduino: Upload (USB)", buffer = true })
 
     -- Quick build (compile only, minimal output)
     vim.keymap.set("n", "<leader>Ab", function()
-        vim.cmd("!arduino-cli compile --fqbn " .. fqbn .. " .")
+        vim.cmd("!cd " .. vim.fn.shellescape(project_dir) .. " && arduino-cli compile --fqbn " .. fqbn .. " .")
     end, { desc = "Arduino: Quick Build", buffer = true })
 
     -- Monitor serial output
@@ -69,7 +84,7 @@ local function setup_arduino_bindings()
         end
     end, { desc = "Arduino: Serial Monitor", buffer = true })
 
-    print("Arduino shortcuts loaded for FQBN: " .. fqbn)
+    print("Arduino shortcuts loaded for FQBN: " .. fqbn .. " in " .. project_dir)
 end
 
 -- Auto-detect and load for Arduino files
