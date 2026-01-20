@@ -17,6 +17,7 @@ return {
             let g:test#strategy = 'floaterm'
             let g:test#php#phpunit#executable = 'php artisan test'
             let g:test#php#pest#executable = 'php artisan test'
+            let g:test#enabled_runners = ['php#pest', 'php#phpunit']
             ]])
     end,
 }
