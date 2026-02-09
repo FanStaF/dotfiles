@@ -24,3 +24,4 @@ if [[ -n ${ZDOTDIR:-$HOME}/.zcompdump(#qN.mh+24) ]]; then
 else
     compinit -C
 fi
+export PATH="$HOME/Android/Sdk/platform-tools:$PATH"

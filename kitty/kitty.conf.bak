@@ -17,3 +17,6 @@ linux_display_server auto
 # 1984 Light
 include current-theme.conf
 # END_KITTY_THEME
+
+allow_remote_control yes
+listen_on unix:/tmp/kitty
