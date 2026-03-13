@@ -27,13 +27,33 @@ if ! sudo systemctl is-active --quiet mysql; then
     sudo systemctl enable mysql
 fi
 
-echo -e "${GREEN}🗄️  Configuring MySQL with root/password credentials...${NC}\n"
+# Prompt for root password
+if [[ -n "$MYSQL_ROOT_PASSWORD" ]]; then
+    MYSQL_PASS="$MYSQL_ROOT_PASSWORD"
+else
+    echo -e "${YELLOW}Choose a root password for MySQL:${NC}"
+    read -sp "  MySQL root password: " MYSQL_PASS
+    echo ""
+    read -sp "  Confirm password: " MYSQL_PASS_CONFIRM
+    echo ""
+
+    if [[ "$MYSQL_PASS" != "$MYSQL_PASS_CONFIRM" ]]; then
+        echo -e "${RED}❌ Passwords do not match${NC}"
+        exit 1
+    fi
+
+    if [[ -z "$MYSQL_PASS" ]]; then
+        echo -e "${RED}❌ Password cannot be empty${NC}"
+        exit 1
+    fi
+fi
+
+echo -e "\n${GREEN}🗄️  Configuring MySQL...${NC}\n"
 
 # Configure MySQL root user with password
-# Using --connect-expired-password in case the root password is expired
 sudo mysql --connect-expired-password <<EOF
--- Set root password to 'password'
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password';
+-- Set root password
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${MYSQL_PASS}';
 
 -- Remove anonymous users
 DELETE FROM mysql.user WHERE User='';
@@ -54,7 +74,7 @@ echo -e "${GREEN}✓ MySQL security configured${NC}\n"
 # Create development databases
 echo -e "${YELLOW}Creating development databases...${NC}"
 
-mysql -uroot -ppassword <<EOF
+mysql -uroot -p"${MYSQL_PASS}" <<EOF
 CREATE DATABASE IF NOT EXISTS development CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS testing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 FLUSH PRIVILEGES;
@@ -64,7 +84,7 @@ echo -e "${GREEN}✓ Databases created${NC}\n"
 
 # Verify connection
 echo -e "${YELLOW}Verifying MySQL connection...${NC}"
-if mysql -uroot -ppassword -e "SELECT VERSION();" > /dev/null 2>&1; then
+if mysql -uroot -p"${MYSQL_PASS}" -e "SELECT VERSION();" > /dev/null 2>&1; then
     echo -e "${GREEN}✓ MySQL connection successful${NC}\n"
 else
     echo -e "${RED}❌ MySQL connection failed${NC}\n"
@@ -80,15 +100,14 @@ echo -e "${YELLOW}MySQL Credentials:${NC}"
 echo -e "  Host:     ${CYAN}127.0.0.1${NC}"
 echo -e "  Port:     ${CYAN}3306${NC}"
 echo -e "  Username: ${CYAN}root${NC}"
-echo -e "  Password: ${CYAN}password${NC}\n"
+echo -e "  Password: ${CYAN}(the password you just set)${NC}\n"
 
 echo -e "${YELLOW}Databases:${NC}"
 echo -e "  ${CYAN}development${NC} - For development work"
 echo -e "  ${CYAN}testing${NC}     - For running tests\n"
 
 echo -e "${YELLOW}Test connection:${NC}"
-echo -e "  ${CYAN}mysql -uroot -ppassword${NC}"
-echo -e "  ${CYAN}mysql -uroot -ppassword development${NC}\n"
+echo -e "  ${CYAN}mysql -uroot -p development${NC}\n"
 
 echo -e "${YELLOW}.env configuration for Laravel:${NC}"
 echo -e "  ${CYAN}DB_CONNECTION=mysql${NC}"
@@ -96,4 +115,4 @@ echo -e "  ${CYAN}DB_HOST=127.0.0.1${NC}"
 echo -e "  ${CYAN}DB_PORT=3306${NC}"
 echo -e "  ${CYAN}DB_DATABASE=development${NC}"
 echo -e "  ${CYAN}DB_USERNAME=root${NC}"
-echo -e "  ${CYAN}DB_PASSWORD=password${NC}\n"
+echo -e "  ${CYAN}DB_PASSWORD=<your-password>${NC}\n"

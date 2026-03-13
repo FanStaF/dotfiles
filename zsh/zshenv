@@ -1,14 +1,6 @@
-# Environment variables (loaded by all zsh processes)
+# Deduplicate PATH entries
+typeset -U path
 
-# Editors
-export EDITOR=nvim
-export VISUAL=nvim
-
-# Node version manager
-export VOLTA_HOME="$HOME/.volta"
-
-# Kitty terminal
-export KITTY_LISTEN_ON="unix:/tmp/kitty"
-
-# PATH
-PATH=~/.local/bin/:~/.config/composer/vendor/bin:$VOLTA_HOME/bin:$PATH
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.config/composer/vendor/bin:$PATH"
+export PATH="$HOME/Android/Sdk/platform-tools:$PATH"

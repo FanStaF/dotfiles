@@ -286,6 +286,7 @@ fi
 echo -e "\n${BLUE}Utilities:${NC}"
 check_command lazygit "LazyGit" "no"
 check_command batcat "Bat (better cat)" "no"
+check_command gh "GitHub CLI (gh)" "no"
 check_file ~/.local/bin/goL "Theme switcher (goL/goD)"
 
 # Font check
@@ -300,13 +301,15 @@ if fc-list | grep -qi "Nerd"; then
         echo -e "    ${CYAN}→${NC} JetBrainsMono Nerd Font"
     elif fc-list | grep -qi "FiraCode.*Nerd"; then
         echo -e "    ${CYAN}→${NC} FiraCode Nerd Font"
+        echo -e "    ${YELLOW}⚠${NC} kitty.conf expects JetBrains Mono — consider reinstalling via ./installSoftware"
+        ((WARNINGS++))
     elif fc-list | grep -qi "Hack.*Nerd"; then
         echo -e "    ${CYAN}→${NC} Hack Nerd Font"
     fi
 else
     echo -e "  ${YELLOW}⚠${NC} Nerd Font not found"
     echo -e "    ${CYAN}→${NC} Required for icons in Neovim/Tmux"
-    echo -e "    ${CYAN}→${NC} Run: ./installSoftware (select FiraCode Nerd Font)"
+    echo -e "    ${CYAN}→${NC} Run: ./installSoftware (select JetBrains Mono Nerd Font)"
     ((WARNINGS++))
 fi
 

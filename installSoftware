@@ -11,6 +11,8 @@ MAGENTA='\033[0;35m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 echo -e "${CYAN}╔════════════════════════════════════════╗${NC}"
 echo -e "${CYAN}║     Development Environment Setup     ║${NC}"
 echo -e "${CYAN}╚════════════════════════════════════════╝${NC}"
@@ -63,7 +65,15 @@ sudo nala install -y \
     fzf ripgrep kitty build-essential \
     zsh tmux git curl wget \
     software-properties-common \
-    xclip ca-certificates gnupg
+    xclip ca-certificates gnupg \
+    bat
+
+# Set default shell to zsh
+if [[ "$SHELL" != *"zsh"* ]]; then
+    echo -e "\n${GREEN}Setting default shell to zsh...${NC}"
+    chsh -s "$(which zsh)"
+    echo -e "${GREEN}✓ Default shell set to zsh (takes effect on next login)${NC}"
+fi
 
 # PHP Version Selection
 echo -e "\n${MAGENTA}═══════════════════════════════════${NC}"
@@ -211,14 +221,16 @@ fi
 echo -e "\n${MAGENTA}═══════════════════════════════════${NC}"
 MYSQL_CHOICE=$(select_option "MySQL installation:" "Local MySQL Server" "Docker MySQL (recommended)" "Skip")
 
-export INSTALL_MYSQL_LOCAL=""
 export INSTALL_MYSQL_DOCKER=""
 
 if [[ "$MYSQL_CHOICE" == "Local MySQL Server" ]]; then
-    INSTALL_MYSQL_LOCAL="yes"
     echo -e "${GREEN}Installing MySQL Server...${NC}"
     sudo nala install -y mysql-server mysql-client
     echo -e "${GREEN}✓ MySQL Server installed${NC}"
+
+    # Run bootstrap-mysql inline
+    echo -e "\n${YELLOW}Now configuring MySQL...${NC}"
+    "${DOTFILES_DIR}/scripts/bootstrap-mysql"
 elif [[ "$MYSQL_CHOICE" == "Docker MySQL (recommended)" ]]; then
     INSTALL_MYSQL_DOCKER="yes"
 fi
@@ -321,7 +333,9 @@ fi
 
 # Neovim
 echo -e "\n${MAGENTA}═══════════════════════════════════${NC}"
+NVIM_INSTALLED=false
 if command -v nvim &> /dev/null; then
+    NVIM_INSTALLED=true
     CURRENT_NVIM=$(nvim --version 2>/dev/null | head -1 | grep -oP 'NVIM v\K[0-9.]+' || echo "unknown")
     echo -e "${YELLOW}Neovim installed: ${CYAN}v${CURRENT_NVIM}${NC}"
 
@@ -352,6 +366,20 @@ elif ask_yes_no "Install Neovim?" "y"; then
     rm nvim-linux64.tar.gz
     echo -e "${GREEN}✓ Neovim installed${NC}"
     nvim --version | head -1
+    NVIM_INSTALLED=true
+fi
+
+# Install Neovim plugins and LSP servers headlessly
+if [[ "$NVIM_INSTALLED" == true ]] && command -v nvim &> /dev/null; then
+    echo -e "\n${GREEN}Installing Neovim plugins (Lazy.nvim sync)...${NC}"
+    set +e
+    nvim --headless "+Lazy! sync" +qa 2>&1
+    echo -e "${GREEN}✓ Neovim plugins installed${NC}"
+
+    echo -e "${GREEN}Installing LSP servers via Mason...${NC}"
+    nvim --headless "+MasonInstall intelephense tailwindcss-language-server lua-language-server" +qa 2>&1
+    echo -e "${GREEN}✓ LSP servers installed${NC}"
+    set -e
 fi
 
 # LazyGit
@@ -383,58 +411,88 @@ elif ask_yes_no "Install LazyGit?" "y"; then
     lazygit --version
 fi
 
-# Nerd Font
+# Nerd Font — JetBrains Mono (matches kitty/kitty.conf)
 echo -e "\n${MAGENTA}═══════════════════════════════════${NC}"
-if fc-list | grep -qi "FiraCode.*Nerd"; then
-    echo -e "${YELLOW}FiraCode Nerd Font already installed${NC}"
-    if ask_yes_no "Reinstall FiraCode Nerd Font?" "n"; then
-        echo -e "${GREEN}Installing FiraCode Nerd Font...${NC}"
+if fc-list | grep -qi "JetBrainsMono.*Nerd"; then
+    echo -e "${YELLOW}JetBrains Mono Nerd Font already installed${NC}"
+    if ask_yes_no "Reinstall JetBrains Mono Nerd Font?" "n"; then
+        echo -e "${GREEN}Installing JetBrains Mono Nerd Font...${NC}"
         mkdir -p ~/.local/share/fonts
         cd ~/.local/share/fonts
-        curl -fLo "FiraCodeNerdFont-Regular.ttf" \
-            https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/FiraCode/Regular/FiraCodeNerdFont-Regular.ttf
-        curl -fLo "FiraCodeNerdFont-Bold.ttf" \
-            https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/FiraCode/Bold/FiraCodeNerdFont-Bold.ttf
+        curl -fLo "JetBrainsMonoNerdFont-Regular.ttf" \
+            https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/JetBrainsMono/Ligatures/Regular/JetBrainsMonoNerdFont-Regular.ttf
+        curl -fLo "JetBrainsMonoNerdFont-Bold.ttf" \
+            https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/JetBrainsMono/Ligatures/Bold/JetBrainsMonoNerdFont-Bold.ttf
+        curl -fLo "JetBrainsMonoNerdFont-Italic.ttf" \
+            https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/JetBrainsMono/Ligatures/Italic/JetBrainsMonoNerdFont-Italic.ttf
+        curl -fLo "JetBrainsMonoNerdFont-BoldItalic.ttf" \
+            https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/JetBrainsMono/Ligatures/BoldItalic/JetBrainsMonoNerdFont-BoldItalic.ttf
         fc-cache -fv > /dev/null 2>&1
         cd - > /dev/null
-        echo -e "${GREEN}✓ FiraCode Nerd Font installed${NC}"
+        echo -e "${GREEN}✓ JetBrains Mono Nerd Font installed${NC}"
     fi
-elif ask_yes_no "Install FiraCode Nerd Font?" "y"; then
-    echo -e "${GREEN}Installing FiraCode Nerd Font...${NC}"
+elif ask_yes_no "Install JetBrains Mono Nerd Font?" "y"; then
+    echo -e "${GREEN}Installing JetBrains Mono Nerd Font...${NC}"
     mkdir -p ~/.local/share/fonts
     cd ~/.local/share/fonts
-    curl -fLo "FiraCodeNerdFont-Regular.ttf" \
-        https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/FiraCode/Regular/FiraCodeNerdFont-Regular.ttf
-    curl -fLo "FiraCodeNerdFont-Bold.ttf" \
-        https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/FiraCode/Bold/FiraCodeNerdFont-Bold.ttf
+    curl -fLo "JetBrainsMonoNerdFont-Regular.ttf" \
+        https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/JetBrainsMono/Ligatures/Regular/JetBrainsMonoNerdFont-Regular.ttf
+    curl -fLo "JetBrainsMonoNerdFont-Bold.ttf" \
+        https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/JetBrainsMono/Ligatures/Bold/JetBrainsMonoNerdFont-Bold.ttf
+    curl -fLo "JetBrainsMonoNerdFont-Italic.ttf" \
+        https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/JetBrainsMono/Ligatures/Italic/JetBrainsMonoNerdFont-Italic.ttf
+    curl -fLo "JetBrainsMonoNerdFont-BoldItalic.ttf" \
+        https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/JetBrainsMono/Ligatures/BoldItalic/JetBrainsMonoNerdFont-BoldItalic.ttf
     fc-cache -fv > /dev/null 2>&1
     cd - > /dev/null
-    echo -e "${GREEN}✓ FiraCode Nerd Font installed${NC}"
+    echo -e "${GREEN}✓ JetBrains Mono Nerd Font installed${NC}"
 fi
+
+# GitHub CLI (gh)
+echo -e "\n${MAGENTA}═══════════════════════════════════${NC}"
+if command -v gh &> /dev/null; then
+    CURRENT_GH=$(gh --version 2>/dev/null | head -1)
+    echo -e "${YELLOW}GitHub CLI installed: ${CYAN}${CURRENT_GH}${NC}"
+elif ask_yes_no "Install GitHub CLI (gh)?" "y"; then
+    echo -e "${GREEN}Installing GitHub CLI...${NC}"
+    sudo mkdir -p -m 755 /etc/apt/keyrings
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null
+    sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | \
+        sudo tee /etc/apt/sources.list.d/github-cli-stable.list > /dev/null
+    sudo nala update
+    sudo nala install -y gh
+    echo -e "${GREEN}✓ GitHub CLI installed${NC}"
+    gh --version | head -1
+fi
+
+# Symlink dotfiles
+echo -e "\n${MAGENTA}═══════════════════════════════════${NC}"
+echo -e "${GREEN}Symlinking dotfiles...${NC}"
+"${DOTFILES_DIR}/install"
 
 echo -e "\n${CYAN}════════════════════════════════════════${NC}"
 echo -e "${GREEN}✅ Installation complete!${NC}"
 echo -e "${CYAN}════════════════════════════════════════${NC}"
 
-# Post-install instructions
-echo -e "\n${YELLOW}Next steps:${NC}"
-echo -e "1. Run: ${CYAN}./install${NC} (to symlink dotfiles)"
+# SSH key migration reminder
+echo -e "\n${YELLOW}🔑 SSH Key Migration:${NC}"
+echo -e "  If migrating from another machine, copy your SSH keys:"
+echo -e "  ${CYAN}scp -r old-machine:~/.ssh/ ~/.ssh/${NC}"
+echo -e "  Then fix permissions:"
+echo -e "  ${CYAN}chmod 700 ~/.ssh && chmod 600 ~/.ssh/id_* && chmod 644 ~/.ssh/*.pub${NC}"
 
-if [[ "$INSTALL_MYSQL_LOCAL" == "yes" ]]; then
-    echo -e "2. Run: ${CYAN}./scripts/bootstrap-mysql${NC} (to configure MySQL)"
-fi
+# Remaining manual steps
+echo -e "\n${YELLOW}Next steps:${NC}"
 
 if [[ "$INSTALL_MYSQL_DOCKER" == "yes" ]]; then
-    echo -e "2. Run: ${CYAN}docker compose up -d${NC} (see docker-compose.yml)"
+    echo -e "  - Run: ${CYAN}docker compose up -d${NC} (see docker-compose.yml)"
 fi
 
-echo -e "3. Run: ${CYAN}exec zsh${NC} (restart shell)"
-echo -e "4. Run: ${CYAN}nvim +Lazy${NC} (install Neovim plugins)"
-echo -e "5. Run: ${CYAN}./scripts/verify-setup${NC} (verify installation)"
+echo -e "  - Run: ${CYAN}exec zsh${NC} (restart shell)"
+echo -e "  - Run: ${CYAN}./scripts/verify-setup${NC} (verify installation)"
 
-if groups | grep -q docker; then
-    echo ""
-else
+if ! groups | grep -q docker; then
     echo -e "\n${YELLOW}⚠  Logout and login again for Docker group permissions${NC}"
 fi
 
