@@ -31,7 +31,7 @@ return {
         vim.keymap.set("n","<leader>gf",vim.lsp.buf.format,o)
       end
 
-      local capabilities = vim.lsp.protocol.make_client_capabilities()
+      local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
       local function get_intelephense_license()
         local f = io.open(os.getenv("HOME").."/intelephense/license.txt","rb")
@@ -40,16 +40,12 @@ return {
         return (c:gsub("%s+",""))
       end
 
-      local phpstan_path = vim.fn.expand(
-        "~/code/wowbrands/r20-digital/vendor/phpstan/phpstan/src"
-      )
-
       -- Now set up mason-lspconfig (for automatic installation only)
       local mason_lspconfig = require("mason-lspconfig")
       mason_lspconfig.setup({
         ensure_installed = {
           "cssls","html","jsonls","lua_ls","marksman",
-          "intelephense","sqlls","stimulus_ls","tailwindcss","ts_ls",
+          "intelephense","sqlls","tailwindcss","ts_ls",
         },
         automatic_installation = true,
       })
@@ -77,7 +73,6 @@ return {
         capabilities = capabilities,
         init_options = {
           licenceKey = get_intelephense_license(),
-          environment = { includePaths = { phpstan_path } },
         },
         settings = {
           intelephense = {
@@ -100,7 +95,6 @@ return {
               },
             },
             stubs = { "laravel","pestphp","eloquent","blade","core","standard" },
-            environment = { includePaths = { phpstan_path } },
             completion = { maxItems = 2000 },
             indexing = { maxFileSize = 500000 },
           },

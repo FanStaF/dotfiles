@@ -9,6 +9,11 @@ return {
                 pattern = { "*.blade.php" },
                 command = "set ft=blade.html",
             })
+
+            require("nvim-treesitter").install({
+                "css","html","javascript","json","lua",
+                "markdown","php","sql","typescript","vim",
+            })
         end,
     },
     {
