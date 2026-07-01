@@ -28,7 +28,13 @@ return {
         vim.keymap.set("n","<leader>r",vim.lsp.buf.rename,o)
         vim.keymap.set("n","]g",function()vim.diagnostic.goto_next();vim.cmd("normal! zz")end,o)
         vim.keymap.set("n","[g",function()vim.diagnostic.goto_prev();vim.cmd("normal! zz")end,o)
-        vim.keymap.set("n","<leader>gf",vim.lsp.buf.format,o)
+        vim.keymap.set("n","<leader>gf",function()
+          if vim.bo[bufnr].filetype == "php" then
+            vim.cmd("ALEFix")
+          else
+            vim.lsp.buf.format()
+          end
+        end,o)
       end
 
       local capabilities = require('cmp_nvim_lsp').default_capabilities()
@@ -45,32 +51,27 @@ return {
       mason_lspconfig.setup({
         ensure_installed = {
           "cssls","html","jsonls","lua_ls","marksman",
-          "intelephense","sqlls","tailwindcss","ts_ls",
+          "intelephense","sqlls","tailwindcss","ts_ls","vue_ls",
         },
         automatic_installation = true,
       })
 
-      -- Lua LS setup using native vim.lsp.config (Neovim 0.11+)
-      vim.lsp.config('lua_ls', {
-        cmd = { 'lua-language-server' },
-        filetypes = { 'lua' },
-        root_markers = { '.luarc.json', '.luarc.jsonc', '.luacheckrc', '.stylua.toml', 'stylua.toml', 'selene.toml', 'selene.yml', '.git' },
+      -- Common config for all LSP servers
+      vim.lsp.config('*', {
         capabilities = capabilities,
+        on_attach = set_lsp_keymaps,
+      })
+
+      vim.lsp.config('lua_ls', {
         settings = {
           Lua = {
             format = { enable = true, defaultConfig = { indent_style="space", indent_size="4" } },
             diagnostics = { globals = { "vim" } },
           },
         },
-        on_attach = set_lsp_keymaps,
       })
 
-      -- Intelephense setup using native vim.lsp.config (Neovim 0.11+)
       vim.lsp.config('intelephense', {
-        cmd = { 'intelephense', '--stdio' },
-        filetypes = { 'php' },
-        root_markers = { 'composer.json', '.git' },
-        capabilities = capabilities,
         init_options = {
           licenceKey = get_intelephense_license(),
         },
@@ -99,12 +100,24 @@ return {
             indexing = { maxFileSize = 500000 },
           },
         },
-        on_attach = set_lsp_keymaps,
       })
 
-      -- Enable the LSP servers
+      vim.lsp.config('vue_ls', {
+        init_options = {
+          vue = {
+            hybridMode = false,
+          },
+        },
+      })
+
       vim.lsp.enable('lua_ls')
       vim.lsp.enable('intelephense')
+      vim.lsp.enable('ts_ls')
+      vim.lsp.enable('vue_ls')
+      vim.lsp.enable('tailwindcss')
+      vim.lsp.enable('cssls')
+      vim.lsp.enable('html')
+      vim.lsp.enable('jsonls')
     end,
   },
 }

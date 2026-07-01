@@ -190,7 +190,7 @@ end
 
 -- Run the full test suite
 function M.run_pest_suite()
-    local cmd = { "php", "artisan", "test" }
+    local cmd = { "php", "artisan", "test", "--parallel" }
     M.run_pest_job(cmd)
 end
 

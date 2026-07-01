@@ -12,7 +12,7 @@ return {
 
             require("nvim-treesitter").install({
                 "css","html","javascript","json","lua",
-                "markdown","php","sql","typescript","vim",
+                "markdown","php","sql","tsx","typescript","vim","vue",
             })
         end,
     },

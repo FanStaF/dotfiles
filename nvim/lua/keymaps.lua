@@ -55,6 +55,9 @@ local myfuncs = require('functions')
 -- Load git changed files -> QuickFix --
 vim.keymap.set('n', '<leader>GS', myfuncs.load_changed_files_to_qf, { desc = 'Git: first changes to QuickFix', noremap = true })
 
+-- Pint --dirty (format all changed files)
+vim.keymap.set('n', '<leader>gF', ':!./vendor/bin/pint --dirty<CR>', { desc = 'Pint: format dirty files' })
+
 -- Quickfix-only background test runs
 vim.keymap.set('n', '<leader>tqn', myfuncs.run_pest_nearest, { desc = 'Test (QF): nearest' })
 vim.keymap.set('n', '<leader>tqf', myfuncs.run_pest_file,    { desc = 'Test (QF): file' })

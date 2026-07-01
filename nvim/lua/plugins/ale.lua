@@ -8,5 +8,11 @@ return {
             php = { 'phpstan' },
             -- javascript = { 'eslint_d' },
         }
+
+        g.ale_fixers = {
+            php = { 'pint' },
+        }
+
+        g.ale_fix_on_save = 0
     end
 }
